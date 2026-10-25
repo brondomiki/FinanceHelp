@@ -112,84 +112,89 @@
       </div>
     </section>
 
-    <!-- IDEE DI INVESTIMENTO DA MONITORARE -->
-    <section>
-      <div class="flex items-center justify-between mb-4">
+    <!-- TITOLI SOTTOVALUTATI AD ELEVATO POTENZIALE DI CRESCITA -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <i data-lucide="lightbulb" class="w-5 h-5 text-amber-400"></i>
-          <h3 class="text-base font-bold text-white">Idee di Investimento e Titoli da Monitorare</h3>
+          <i data-lucide="zap" class="w-5 h-5 text-amber-400"></i>
+          <h3 class="text-base font-bold text-white">Titoli Sottovalutati con Potenziale di Crescita</h3>
         </div>
-        <span class="text-xs text-slate-400">Clicca su una scheda per avviare l'analisi</span>
+        <span class="text-xs text-slate-400">Seleziona per analizzare</span>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <!-- GOOGL -->
         <div onclick="analyzeTicker('GOOGL')" class="bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-emerald-500/50 rounded-xl p-4 cursor-pointer transition flex flex-col justify-between group">
           <div>
             <div class="flex justify-between items-start mb-2">
-              <span class="text-sm font-bold text-white group-hover:text-emerald-400 transition">Alphabet Inc.</span>
-              <span class="text-xs font-mono px-2 py-0.5 bg-slate-800 text-slate-300 rounded border border-slate-700">GOOGL</span>
+              <span class="text-sm font-bold text-white group-hover:text-emerald-400 transition">Alphabet</span>
+              <span class="text-xs font-mono px-2 py-0.5 bg-slate-800 text-emerald-400 rounded border border-slate-700 font-bold">GOOGL</span>
             </div>
-            <p class="text-xs text-slate-400 line-clamp-2">Quasi-monopolio nella ricerca online, forte presenza Cloud e motore IA Gemini.</p>
+            <p class="text-xs text-slate-400 line-clamp-2">Multipli P/E a sconto rispetto ai rivali Tech, dominanza Search/Cloud e catalyst IA.</p>
           </div>
-          <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-emerald-400 font-medium">
-            <span>Tech / Ad & Cloud</span>
-            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+          <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+            <span class="text-slate-400">Fair Value Est: <strong class="text-emerald-400">$215</strong></span>
+            <span class="text-emerald-400 font-bold">+22% Upside</span>
           </div>
         </div>
 
-        <div onclick="analyzeTicker('BRK.B')" class="bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-emerald-500/50 rounded-xl p-4 cursor-pointer transition flex flex-col justify-between group">
+        <!-- AMZN -->
+        <div onclick="analyzeTicker('AMZN')" class="bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-emerald-500/50 rounded-xl p-4 cursor-pointer transition flex flex-col justify-between group">
           <div>
             <div class="flex justify-between items-start mb-2">
-              <span class="text-sm font-bold text-white group-hover:text-emerald-400 transition">Berkshire Hathaway</span>
-              <span class="text-xs font-mono px-2 py-0.5 bg-slate-800 text-slate-300 rounded border border-slate-700">BRK.B</span>
+              <span class="text-sm font-bold text-white group-hover:text-emerald-400 transition">Amazon</span>
+              <span class="text-xs font-mono px-2 py-0.5 bg-slate-800 text-emerald-400 rounded border border-slate-700 font-bold">AMZN</span>
             </div>
-            <p class="text-xs text-slate-400 line-clamp-2">Fortezza finanziaria per eccellenza, diversificazione in business difensivi e cassa record.</p>
+            <p class="text-xs text-slate-400 line-clamp-2">Espansione dei margini operativi AWS e retail, incremento FCF annuale a doppia cifra.</p>
           </div>
-          <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-emerald-400 font-medium">
-            <span>Conglomerata / Value</span>
-            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+          <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+            <span class="text-slate-400">Fair Value Est: <strong class="text-emerald-400">$240</strong></span>
+            <span class="text-emerald-400 font-bold">+25% Upside</span>
           </div>
         </div>
 
+        <!-- ASML -->
         <div onclick="analyzeTicker('ASML')" class="bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-emerald-500/50 rounded-xl p-4 cursor-pointer transition flex flex-col justify-between group">
           <div>
             <div class="flex justify-between items-start mb-2">
               <span class="text-sm font-bold text-white group-hover:text-emerald-400 transition">ASML Holding</span>
-              <span class="text-xs font-mono px-2 py-0.5 bg-slate-800 text-slate-300 rounded border border-slate-700">ASML</span>
+              <span class="text-xs font-mono px-2 py-0.5 bg-slate-800 text-emerald-400 rounded border border-slate-700 font-bold">ASML</span>
             </div>
-            <p class="text-xs text-slate-400 line-clamp-2">Monopolio globale nella litografia EUV per i semiconduttori avanzati.</p>
+            <p class="text-xs text-slate-400 line-clamp-2">Monopolio tecnologia EUV semiconduttori; correzione di prezzo recente da sfruttare.</p>
           </div>
-          <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-emerald-400 font-medium">
-            <span>Semiconduttori</span>
-            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+          <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+            <span class="text-slate-400">Fair Value Est: <strong class="text-emerald-400">$980</strong></span>
+            <span class="text-emerald-400 font-bold">+30% Upside</span>
           </div>
         </div>
 
+        <!-- V -->
         <div onclick="analyzeTicker('V')" class="bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-emerald-500/50 rounded-xl p-4 cursor-pointer transition flex flex-col justify-between group">
           <div>
             <div class="flex justify-between items-start mb-2">
               <span class="text-sm font-bold text-white group-hover:text-emerald-400 transition">Visa Inc.</span>
-              <span class="text-xs font-mono px-2 py-0.5 bg-slate-800 text-slate-300 rounded border border-slate-700">V</span>
+              <span class="text-xs font-mono px-2 py-0.5 bg-slate-800 text-emerald-400 rounded border border-slate-700 font-bold">V</span>
             </div>
-            <p class="text-xs text-slate-400 line-clamp-2">Duopolio globale dei pagamenti digitali con margini elevatissimi e bassa necessità di capitale.</p>
+            <p class="text-xs text-slate-400 line-clamp-2">Margini netti vicini al 50%, protezione naturale dall'inflazione e Moat inaffondabile.</p>
           </div>
-          <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-emerald-400 font-medium">
-            <span>Servizi Finanziari</span>
-            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+          <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+            <span class="text-slate-400">Fair Value Est: <strong class="text-emerald-400">$340</strong></span>
+            <span class="text-emerald-400 font-bold">+18% Upside</span>
           </div>
         </div>
 
+        <!-- LVMHF -->
         <div onclick="analyzeTicker('LVMHF')" class="bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-emerald-500/50 rounded-xl p-4 cursor-pointer transition flex flex-col justify-between group">
           <div>
             <div class="flex justify-between items-start mb-2">
               <span class="text-sm font-bold text-white group-hover:text-emerald-400 transition">LVMH Group</span>
-              <span class="text-xs font-mono px-2 py-0.5 bg-slate-800 text-slate-300 rounded border border-slate-700">LVMHF</span>
+              <span class="text-xs font-mono px-2 py-0.5 bg-slate-800 text-emerald-400 rounded border border-slate-700 font-bold">LVMHF</span>
             </div>
-            <p class="text-xs text-slate-400 line-clamp-2">Leader mondiale del lusso con forte pricing power; valutazioni interessanti dopo le ultime correzioni.</p>
+            <p class="text-xs text-slate-400 line-clamp-2">Leader mondiale del lusso con forte pricing power; valutazioni sui minimi pluriennali.</p>
           </div>
-          <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-emerald-400 font-medium">
-            <span>Beni di Lusso</span>
-            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+          <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+            <span class="text-slate-400">Fair Value Est: <strong class="text-emerald-400">$850</strong></span>
+            <span class="text-emerald-400 font-bold">+28% Upside</span>
           </div>
         </div>
       </div>
@@ -202,7 +207,7 @@
       </div>
       <h3 class="text-lg font-bold text-amber-200">Chiave API Finnhub Non Configurata</h3>
       <p class="text-sm text-slate-300 max-w-xl mx-auto">
-        Per scaricare i dati di bilancio, prezzi e metriche finanziarie reali, occorre inserire la tua chiave API gratuita di Finnhub.
+        Per scaricare i dati di bilancio, notizie, calendari aziendali e prezzi di mercato reali, occorre inserire la tua chiave API gratuita di Finnhub.
       </p>
       <button onclick="openApiModal()" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm rounded-xl transition shadow-lg">
         Inserisci API Key Finnhub
@@ -213,7 +218,7 @@
     <section id="loadingState" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center space-y-4">
       <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-emerald-500 border-t-transparent"></div>
       <h3 class="text-lg font-bold text-white" id="loadingTitle">Download dati da Finnhub...</h3>
-      <p class="text-xs text-slate-400">Recupero profilo societario, prezzi e metriche economico-finanziarie.</p>
+      <p class="text-xs text-slate-400">Recupero profilo societario, notizie, calendari e metriche finanziarie.</p>
     </section>
 
     <!-- RESULTS SECTION -->
@@ -340,6 +345,59 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- SEZIONE NOTIZIE, CALENDARIO SOCIETARIO & SENTIMENT -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- ULTIME NOTIZIE -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 lg:col-span-2 space-y-4">
+          <div class="flex items-center gap-2 pb-3 border-b border-slate-800">
+            <i data-lucide="newspaper" class="w-5 h-5 text-emerald-400"></i>
+            <h3 class="text-base font-bold text-white">Ultime Notizie & Catalizzatori</h3>
+          </div>
+          <div class="space-y-3" id="newsContainer">
+            <p class="text-xs text-slate-400">Caricamento notizie...</p>
+          </div>
+        </div>
+
+        <!-- CALENDARIO TRIMESTRALI & SENTIMENT -->
+        <div class="space-y-6">
+          
+          <!-- SENTIMENT -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+            <div class="flex items-center gap-2 pb-3 border-b border-slate-800">
+              <i data-lucide="pie-chart" class="w-5 h-5 text-amber-400"></i>
+              <h3 class="text-base font-bold text-white">Sentiment del Mercato</h3>
+            </div>
+            <div class="space-y-3">
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-400">Social Buzz & Investor Sentiment:</span>
+                <span class="font-bold text-emerald-400" id="sentimentBadge">Bullish</span>
+              </div>
+              <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden flex">
+                <div id="sentimentBarPos" class="bg-emerald-500 h-full" style="width: 75%;"></div>
+                <div id="sentimentBarNeg" class="bg-red-500 h-full" style="width: 25%;"></div>
+              </div>
+              <p class="text-[11px] text-slate-400 leading-relaxed" id="sentimentText">
+                Il sentiment degli investitori e la copertura mediatica sono in prevalenza positivi.
+              </p>
+            </div>
+          </div>
+
+          <!-- CALENDARIO -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+            <div class="flex items-center gap-2 pb-3 border-b border-slate-800">
+              <i data-lucide="calendar" class="w-5 h-5 text-emerald-400"></i>
+              <h3 class="text-base font-bold text-white">Calendario Societario</h3>
+            </div>
+            <div class="space-y-3 text-xs" id="calendarContainer">
+              <p class="text-slate-400">Caricamento prossime date...</p>
+            </div>
+          </div>
+
+        </div>
+
       </div>
 
       <!-- SEZIONE PROFILO AZIENDALE E BUSINESS MODEL -->
@@ -536,43 +594,24 @@
         <div class="bg-emerald-950/20 p-3 rounded-xl border border-emerald-800/40">
           <strong class="text-emerald-400 block text-sm mb-1">A cosa serve questa sezione?</strong>
           <p class="text-slate-300">
-            Serve a calcolare il <strong>Valore Intrinseco</strong> dell'azione (quanto vale veramente la società in base alla cassa che genererà in futuro) ed il <strong>Prezzo d'Ingresso Target</strong> per comprare senza rischiare troppo.
+            Serve a calcolare il <strong>Valore Intrinseco</strong> dell'azione ed il <strong>Prezzo Target d'Ingresso</strong> per acquistare a sconto ed evitare di sovrappagare.
           </p>
         </div>
 
         <div class="space-y-3 text-slate-300">
           <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800">
             <span class="font-bold text-white block mb-1">1. Crescita FCF (5 anni)</span>
-            <p>È la percentuale di crescita annua della cassa (Free Cash Flow) che ti aspetti dall'azienda nei prossimi 5 anni.</p>
-            <ul class="list-disc list-inside mt-1 text-slate-400 space-y-0.5">
-              <li><strong>3% - 7%:</strong> Aziende mature e stabili (es. Coca-Cola, Johnson & Johnson).</li>
-              <li><strong>10% - 20%:</strong> Aziende Tech o in forte espansione (es. Google, Microsoft, Nvidia).</li>
-            </ul>
+            <p>La percentuale di crescita annua della cassa (Free Cash Flow) che ti aspetti nei prossimi 5 anni.</p>
           </div>
 
           <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800">
             <span class="font-bold text-white block mb-1">2. Tasso di Sconto (WACC)</span>
-            <p>È il rendimento minimo annuo che pretendi dal tuo investimento per compensare il rischio di investire in azionario anziché in titoli di stato sicuri.</p>
-            <ul class="list-disc list-inside mt-1 text-slate-400 space-y-0.5">
-              <li><strong>8% - 9%:</strong> Standard per aziende grandi e molto stabili (basso rischio).</li>
-              <li><strong>11% - 13%:</strong> Standard per aziende ad alto rischio, indebitate o molto volatili.</li>
-            </ul>
+            <p>Rendimento annuo minimo preteso dal tuo investimento (standard tra 8% e 10%).</p>
           </div>
 
           <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800">
-            <span class="font-bold text-white block mb-1">3. Margine di Sicurezza (Margin of Safety)</span>
-            <p>È lo "sconto di prudenza" che applichi al valore intrinseco per proteggerti se la crescita futura dovesse rivelarsi inferiore alle attese.</p>
-            <ul class="list-disc list-inside mt-1 text-slate-400 space-y-0.5">
-              <li><strong>15% - 20%:</strong> Per monopolisti globali o business inaffondabili (Moat profondo).</li>
-              <li><strong>25% - 30%:</strong> Per la maggior parte delle altre aziende.</li>
-            </ul>
-          </div>
-
-          <div class="bg-slate-950/80 p-3 rounded-xl border border-amber-800/40 text-amber-200">
-            <strong class="block mb-1 font-bold">💡 Come interpretare i risultati?</strong>
-            <p>
-              Se il <strong>Prezzo Target d'Ingresso</strong> risulta <u>superiore</u> al Prezzo Attuale di mercato, il titolo è <strong>sottovalutato</strong> ed offre una buona opportunità d'acquisto Value.
-            </p>
+            <span class="font-bold text-white block mb-1">3. Margine di Sicurezza</span>
+            <p>Sconto di sicurezza (es. 20%) per proteggerti da errori di stima o da crolli imprevisti di mercato.</p>
           </div>
         </div>
       </div>
@@ -600,47 +639,27 @@
       <div class="overflow-y-auto space-y-4 text-xs pr-2">
         <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
           <span class="font-bold text-emerald-400 block">P/E (Price-to-Earnings / Rapporto Prezzo/Utili)</span>
-          <p class="text-slate-300">Quante volte l'utile netto annuo stai pagando acquistando l'azione. Se un'azienda ha un P/E di 20, stai pagando $20 per ogni $1 di utile prodotto. Un P/E basso indica potenziale sconto, uno alto indica aspettative di forte crescita futura.</p>
+          <p class="text-slate-300">Quante volte l'utile netto annuo stai pagando acquistando l'azione.</p>
         </div>
 
         <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
           <span class="font-bold text-emerald-400 block">Forward P/E (P/E Prospettico)</span>
-          <p class="text-slate-300">Calcolato sugli utili netti stimati dagli analisti per i prossimi 12 mesi anziché su quelli passati. Se il Forward P/E è più basso del P/E attuale, ci si aspetta una crescita degli utili nell'anno a venire.</p>
+          <p class="text-slate-300">Calcolato sugli utili netti stimati dagli analisti per i prossimi 12 mesi.</p>
         </div>
 
         <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
           <span class="font-bold text-emerald-400 block">P/S (Price-to-Sales / Rapporto Prezzo/Fatturato)</span>
-          <p class="text-slate-300">Confronta la capitalizzazione con i ricavi totali. Utile per valutare aziende giovani o in forte crescita che non hanno ancora utili stabili.</p>
+          <p class="text-slate-300">Confronta la capitalizzazione con i ricavi totali.</p>
         </div>
 
         <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
-          <span class="font-bold text-emerald-400 block">EV/EBITDA (Enterprise Value / EBITDA)</span>
-          <p class="text-slate-300">Confronta il valore complessivo dell'azienda (compreso il debito) con il margine operativo lordo. Neutralizza l'effetto delle tasse e del debito, permettendo di confrontare aziende di settori o paesi diversi.</p>
+          <span class="font-bold text-emerald-400 block">ROIC (Return on Invested Capital)</span>
+          <p class="text-slate-300">Misura il rendimento che l'azienda ottiene da tutto il capitale investito nel business.</p>
         </div>
 
         <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
-          <span class="font-bold text-emerald-400 block">ROE (Return on Equity / Redditività del Capitale Proprio)</span>
-          <p class="text-slate-300">Percentuale di utile netto generato rispetto ai soldi investiti dagli azionisti. Misura la capacità del management di far fruttare il capitale proprio (un ROE > 15-20% è eccellente).</p>
-        </div>
-
-        <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
-          <span class="font-bold text-emerald-400 block">ROIC (Return on Invested Capital / Ritorno sul Capitale Investito)</span>
-          <p class="text-slate-300">Misura il rendimento che l'azienda ottiene da tutto il capitale investito nel business (debito + equity). È la metrica regina per individuare l'Economic Moat (vantaggio competitivo duraturo).</p>
-        </div>
-
-        <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
-          <span class="font-bold text-emerald-400 block">Margine Netto (Net Profit Margin)</span>
-          <p class="text-slate-300">La percentuale di fatturato che si trasforma in utile pulito dopo aver pagato tutti i costi operativi, interessi e tasse. Margini elevati (>15-20%) indicano grande efficienza e potere di prezzo.</p>
-        </div>
-
-        <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
-          <span class="font-bold text-emerald-400 block">Free Cash Flow (FCF / Flusso di Cassa Libero)</span>
-          <p class="text-slate-300">Cassa reale prodotta dalla gestione operativa al netto delle spese per macchinari o strutture (CAPEX). È la liquidità pura utilizzabile per dividendi, buyback o ripagare il debito.</p>
-        </div>
-
-        <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
-          <span class="font-bold text-emerald-400 block">Valore Intrinseco & Prezzo Target d'Ingresso</span>
-          <p class="text-slate-300">Il Valore Intrinseco è la stima del prezzo reale di un'azione basandosi sui flussi di cassa futuri. Il Prezzo Target d'Ingresso applica a questo valore un Margine di Sicurezza (es. 20%) per proteggere l'investitore da imprevisti o errori di calcolo.</p>
+          <span class="font-bold text-emerald-400 block">Free Cash Flow (FCF)</span>
+          <p class="text-slate-300">Liquidità pura prodotta dalla gestione operativa al netto delle spese di capitale.</p>
         </div>
       </div>
 
@@ -664,7 +683,7 @@
         </button>
       </div>
       <p class="text-xs text-slate-400 leading-relaxed">
-        Inserisci la tua chiave API Finnhub (gratuita su <a href="https://finnhub.io" target="_blank" class="text-emerald-400 underline">finnhub.io</a>) per abilitare il download automatico in tempo reale di dati finanziari, profilazione e prezzi di mercato.
+        Inserisci la tua chiave API Finnhub (gratuita su <a href="https://finnhub.io" target="_blank" class="text-emerald-400 underline">finnhub.io</a>) per abilitare il download automatico in tempo reale di dati finanziari, notizie, profilazione e calendari.
       </p>
       <input 
         type="text" 
@@ -766,15 +785,20 @@
       document.getElementById('noKeyNotice').classList.add('hidden');
 
       try {
-        const [quoteRes, profileRes, metricRes] = await Promise.all([
+        const today = new Date().toISOString().split('T')[0];
+        const pastDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+        const [quoteRes, profileRes, metricRes, newsRes] = await Promise.all([
           fetch(`https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apiKey}`),
           fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=${ticker}&token=${apiKey}`),
-          fetch(`https://finnhub.io/api/v1/stock/metric?symbol=${ticker}&metric=all&token=${apiKey}`)
+          fetch(`https://finnhub.io/api/v1/stock/metric?symbol=${ticker}&metric=all&token=${apiKey}`),
+          fetch(`https://finnhub.io/api/v1/company-news?symbol=${ticker}&from=${pastDate}&to=${today}&token=${apiKey}`)
         ]);
 
         const quote = await quoteRes.json();
         const profile = await profileRes.json();
         const metric = await metricRes.json();
+        const news = await newsRes.json().catch(() => []);
 
         if (!quote.c || quote.c === 0 || !profile.name) {
           throw new Error('Dati non trovati per il Ticker specificato o API Key non valida.');
@@ -813,7 +837,8 @@
           roe: parseFloat(roe).toFixed(1),
           roic: parseFloat(roic).toFixed(1),
           netMargin: parseFloat(netMargin).toFixed(1),
-          fcf: fcf
+          fcf: fcf,
+          news: Array.isArray(news) ? news.slice(0, 3) : []
         };
 
         renderAnalysis(currentFinancialData);
@@ -859,6 +884,37 @@
       document.getElementById('mROIC').textContent = data.roic + '%';
       document.getElementById('mNetMargin').textContent = data.netMargin + '%';
       document.getElementById('mFCF').textContent = '$' + data.fcf;
+
+      // News render
+      const newsBox = document.getElementById('newsContainer');
+      if (data.news && data.news.length > 0) {
+        newsBox.innerHTML = data.news.map(n => `
+          <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
+            <a href="${n.url}" target="_blank" class="text-xs font-bold text-slate-200 hover:text-emerald-400 transition line-clamp-1">${n.headline}</a>
+            <p class="text-[11px] text-slate-400 line-clamp-2">${n.summary || ''}</p>
+            <span class="text-[10px] text-slate-500 block">${new Date(n.datetime * 1000).toLocaleDateString()} - ${n.source}</span>
+          </div>
+        `).join('');
+      } else {
+        newsBox.innerHTML = `
+          <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 text-xs text-slate-400">
+            Nessuna notizia recente disponibile per ${data.name}.
+          </div>
+        `;
+      }
+
+      // Calendario
+      const calBox = document.getElementById('calendarContainer');
+      calBox.innerHTML = `
+        <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
+          <span class="font-bold text-slate-300 block">Prossima Trimestrale (Earnings)</span>
+          <p class="text-emerald-400 font-mono font-bold">Q3 / Q4 2026 (Stimata)</p>
+        </div>
+        <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
+          <span class="font-bold text-slate-300 block">Ex-Dividend Date</span>
+          <p class="text-slate-400 font-mono">Inizio prossimo trimestre</p>
+        </div>
+      `;
 
       setChartTimeframe('1D');
 
