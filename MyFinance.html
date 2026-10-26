@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="it" class="h-full bg-[#0b0f17] text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portafoglio Finanziario & Analisi Strategica</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Eliminazione totale di margini/padding esterni per integrazione pulita in Iframe (Google Sites) */
+        html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background-color: #0b0f17 !important;
+            min-height: 100vh;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        /* Scrollbar personalizzata sottile */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f17;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans antialiased bg-[#0b0f17] text-slate-100">
+
+    <!-- Header & API Bar -->
+    <header class="border-b border-slate-800/80 bg-slate-900/90 backdrop-blur sticky top-0 z-30 w-full">
+        <div class="w-full px-4 sm:px-6 py-4">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-blue-500"></i>
+                        Portafoglio & Monitoraggio Finanziario
+                    </h1>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-0.5">
+                        Calcolo automatico prezzi di carico, analisi fondamentale e azioni consigliate
+                    </p>
+                </div>
+
+                <!-- Finnhub Integration Status & Controls -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <!-- Timer & Auto-Refresh Controls -->
+                    <div class="bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-2 flex items-center gap-2.5 text-xs shadow-inner">
+                        <button id="toggleTimerBtn" onclick="toggleAutoRefresh()" class="text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 focus:outline-none">
+                            <i id="timerIcon" class="fa-solid fa-pause text-amber-400"></i>
+                            <span id="timerStatusText" class="font-medium">Auto: 10s</span>
+                        </button>
+                        <div class="h-4 w-px bg-slate-700"></div>
+                        <div class="text-slate-400 font-mono flex items-center gap-1">
+                            <i class="fa-regular fa-clock text-slate-400"></i>
+                            <span id="countdownText" class="text-slate-200 font-semibold">10s</span>
+                        </div>
+                    </div>
+
+                    <!-- Finnhub Connection Badge & Modal Trigger Button -->
+                    <div class="flex items-center gap-2 bg-slate-800/80 border border-slate-700/80 rounded-xl p-2 shadow-inner">
+                        <span id="apiStatusBadge" class="text-xs font-medium px-3 py-1 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center gap-1.5 whitespace-nowrap">
+                            <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                            🔴 Finnhub Non Configurato
+                        </span>
+                        <button onclick="openApiModal()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 hover:text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 border border-slate-600 shadow-sm whitespace-nowrap">
+                            <i class="fa-solid fa-gear text-amber-400"></i> Configura API
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 w-full px-4 sm:px-6 py-6 space-y-6">
+
+        <!-- Portfolio Summary Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Capitale Iniziale Stimato -->
+            <div class="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+                <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Capitale Iniziale Stimato</div>
+                <div class="text-2xl font-bold text-white mt-2" id="totalInvested">€0,00</div>
+                <div class="text-xs text-slate-500 mt-1">Somma dei prezzi d'acquisto</div>
+                <div class="absolute -right-2 -bottom-2 text-slate-800 opacity-20 text-6xl pointer-events-none">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+            </div>
+
+            <!-- Valore Attuale Portafoglio -->
+            <div class="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+                <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Valore Attuale Portafoglio</div>
+                <div class="text-2xl font-bold text-white mt-2" id="totalMarketValue">€0,00</div>
+                <div class="text-xs text-slate-400 mt-1 flex items-center gap-1">
+                    <span id="lastUpdatedTime">Dati calcolati dallo screenshot</span>
+                </div>
+                <div class="absolute -right-2 -bottom-2 text-slate-800 opacity-20 text-6xl pointer-events-none">
+                    <i class="fa-solid fa-coins"></i>
+                </div>
+            </div>
+
+            <!-- Profit/Loss Netto Globale -->
+            <div class="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+                <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Profitto / Perdita Netto</div>
+                <div class="text-2xl font-bold mt-2" id="totalPL">€0,00</div>
+                <div class="text-xs mt-1 font-semibold" id="totalPLPercent">+0.00%</div>
+                <div class="absolute -right-2 -bottom-2 text-slate-800 opacity-20 text-6xl pointer-events-none">
+                    <i class="fa-solid fa-chart-pie"></i>
+                </div>
+            </div>
+
+            <!-- Stato Posizioni -->
+            <div class="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+                <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Posizioni In Portafoglio</div>
+                <div class="text-2xl font-bold text-white mt-2">9 Titoli</div>
+                <div class="text-xs text-emerald-400 mt-1 flex items-center gap-1">
+                    <i class="fa-solid fa-circle-check"></i> 4 In Profitto | 5 In Perdita
+                </div>
+                <div class="absolute -right-2 -bottom-2 text-slate-800 opacity-20 text-6xl pointer-events-none">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Controls & Quick Info -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-900/40 p-3.5 rounded-xl border border-slate-800/80">
+            <div class="text-xs text-slate-300 flex items-center gap-2">
+                <i class="fa-solid fa-circle-info text-blue-400"></i>
+                <span>Clicca su qualsiasi riga della tabella per aprire l'<strong>Analisi dello Stato di Salute</strong> e il <strong>Piano d'Azione</strong>.</span>
+            </div>
+            <div class="flex items-center gap-2 w-full sm:w-auto text-xs text-slate-400">
+                <span class="bg-slate-800 px-2.5 py-1 rounded border border-slate-700">Cambio EUR/USD stimato: <strong>1.08</strong></span>
+            </div>
+        </div>
+
+        <!-- Stock Table Container -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl overflow-hidden w-full">
+            <div class="overflow-x-auto w-full">
+                <table class="w-full text-left border-collapse min-w-[1050px]">
+                    <thead>
+                        <tr class="bg-slate-950/80 text-slate-400 text-xs font-semibold tracking-wider uppercase border-b border-slate-800 whitespace-nowrap">
+                            <th class="py-3.5 px-4">Titolo / Simbolo</th>
+                            <th class="py-3.5 px-3 text-center">Qtà</th>
+                            <th class="py-3.5 px-3 text-right">Prezzo Acq. Est.</th>
+                            <th class="py-3.5 px-3 text-right">Prezzo Corrente</th>
+                            <th class="py-3.5 px-4 text-right">Valore Mercato</th>
+                            <th class="py-3.5 px-3 text-right">% Netta P/L</th>
+                            <th class="py-3.5 px-4 text-right">Prof./Perd. (€)</th>
+                            <th class="py-3.5 px-3 text-center">Stato P/L</th>
+                            <th class="py-3.5 px-4 text-center">Azione Suggerita</th>
+                        </tr>
+                    </thead>
+                    <tbody id="portfolioTableBody" class="divide-y divide-slate-800/60 text-sm">
+                        <!-- Dynamic Rows Injected by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Detailed Stock Analysis Panel -->
+        <section id="detailSection" class="hidden transition-all duration-300">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-7 shadow-2xl relative">
+                <button onclick="closeDetails()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg px-3 py-1.5 text-xs transition-all flex items-center gap-1.5 border border-slate-700">
+                    <i class="fa-solid fa-xmark text-sm"></i> Chiudi Scheda
+                </button>
+
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between border-b border-slate-800 pb-5 mb-6 gap-4 pr-16">
+                    <div>
+                        <div class="flex items-center gap-3">
+                            <h2 class="text-2xl font-bold text-white" id="modalTitle">Nome Titolo</h2>
+                            <span id="modalSymbolBadge" class="px-2.5 py-1 rounded-md text-xs font-bold bg-slate-800 text-blue-400 border border-slate-700">MSFT</span>
+                            <span id="modalCurrencyBadge" class="px-2 py-0.5 rounded text-xs bg-slate-800 text-slate-400 border border-slate-700">USD</span>
+                        </div>
+                        <p class="text-xs sm:text-sm text-slate-400 mt-1" id="modalSubInfo">Quantità: 0 | Prezzo d'Acquisto Stimato: $0.00</p>
+                    </div>
+
+                    <div class="flex items-center gap-6 bg-slate-950/80 px-5 py-3 rounded-xl border border-slate-800">
+                        <div>
+                            <div class="text-xs text-slate-400">P/L Netto Totale</div>
+                            <div class="text-xl font-bold" id="modalPLValue">€0.00</div>
+                        </div>
+                        <div class="h-8 w-px bg-slate-800"></div>
+                        <div>
+                            <div class="text-xs text-slate-400">Rendimento %</div>
+                            <div class="text-xl font-bold" id="modalPLPercent">0.00%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analysis Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Stato di Salute -->
+                    <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-5">
+                        <h3 class="text-base font-semibold text-emerald-400 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-heart-pulse"></i>
+                            Stato di Salute Fundamentals & Mercato
+                        </h3>
+                        <div id="modalHealthText" class="text-slate-300 text-sm leading-relaxed space-y-2">
+                            <!-- Injected -->
+                        </div>
+                    </div>
+
+                    <!-- Piano d'Azione -->
+                    <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-5">
+                        <h3 class="text-base font-semibold text-blue-400 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-compass"></i>
+                            Piano d'Azione Strategico
+                        </h3>
+                        <div id="modalActionText" class="text-slate-300 text-sm leading-relaxed space-y-2">
+                            <!-- Injected -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Finnhub API Key Modal -->
+    <div id="apiKeyModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+            <button onclick="closeApiModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg p-2 text-xs transition-all">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                    <i class="fa-solid fa-key text-lg"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-white">Configurazione Finnhub API</h3>
+                    <p class="text-xs text-slate-400">Inserisci la tua chiave gratuita di Finnhub.io</p>
+                </div>
+            </div>
+            
+            <div class="space-y-4 my-5">
+                <div>
+                    <label for="modalApiKeyInput" class="block text-xs font-semibold text-slate-300 mb-1.5">Chiave API Finnhub</label>
+                    <input type="password" id="modalApiKeyInput" placeholder="es. c1234567890abcdef..." 
+                        class="w-full bg-slate-950 border border-slate-700 text-sm text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-blue-500 transition-all font-mono" />
+                </div>
+                <p class="text-xs text-slate-400 leading-relaxed bg-slate-950/60 p-3 rounded-lg border border-slate-800">
+                    <i class="fa-solid fa-shield-halved text-blue-400 mr-1"></i>
+                    La tua API Key verrà salvata unicamente nel browser (`localStorage`) per aggiornare i dati ogni 10 secondi.
+                </p>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <button onclick="removeApiKey()" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-medium px-4 py-2.5 rounded-xl border border-rose-500/20 transition-colors">
+                    Rimuovi Chiave
+                </button>
+                <button onclick="saveApiKeyFromModal()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-5 py-2.5 rounded-xl shadow transition-colors">
+                    Salva & Collega
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer senza margini vuoti -->
+    <footer class="border-t border-slate-800/60 bg-slate-950 py-4 text-center text-xs text-slate-500 mt-auto">
+        <p>Dashboard Analisi Portafoglio • Aggiornamento live ogni 10s • Finnhub Integration</p>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Data extracted and calculated from screenshot
+        const rawPortfolioData = [
+            {
+                id: 'msft',
+                name: 'Microsoft Corporation',
+                symbol: 'MSFT',
+                finnhubSymbol: 'MSFT',
+                currency: 'USD',
+                qty: 2,
+                currentPrice: 531.58,
+                marketValueUsd: 1063.16,
+                plPercent: 0.98,
+                plEur: 9.21,
+                purchasePriceCalculated: 526.42,
+                health: "<strong>Salute Eccezionale (Top Tier).</strong> Microsoft vanta una posizione di leadership incontrastata nel Cloud (Azure) e nell'Intelligenza Artificiale commerciale (partnership Copilot/OpenAI). Bilancio solidissimo con elevatissimi flussi di cassa.",
+                action: "<strong>MANTENERE / ACCUMULARE (Core Hold).</strong> Posizione cardine del portafoglio. Mantenere senza ansia e valutare leggeri incrementi su eventuali storni di mercato.",
+                badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+                actionBadge: "Mantenere Core"
+            },
+            {
+                id: 'bam',
+                name: 'Brookfield Asset Mgmt',
+                symbol: 'BAM',
+                finnhubSymbol: 'BAM',
+                currency: 'USD',
+                qty: 18,
+                currentPrice: 47.07,
+                marketValueUsd: 847.26,
+                plPercent: -20.46,
+                plEur: -195.05,
+                purchasePriceCalculated: 59.18,
+                health: "<strong>Salute Solida ma sensibile ai tassi.</strong> Leader globale nella gestione di asset reali (infrastrutture, rinnovabili, real estate). Ha sofferto per l'ambiente di tassi d'interesse elevati, ma genera commissioni stabili.",
+                action: "<strong>HOLD / DOLLAR COST AVERAGE (DCA).</strong> Non vendere in perdita. Con il ciclo di taglio dei tassi, i titoli infrastrutturali tendono a recuperare terreno marcatamente.",
+                badgeColor: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+                actionBadge: "Hold & Monitor"
+            },
+            {
+                id: 'amzn',
+                name: 'Amazon.com Inc',
+                symbol: 'AMZN',
+                finnhubSymbol: 'AMZN',
+                currency: 'USD',
+                qty: 5,
+                currentPrice: 248.37,
+                marketValueUsd: 1241.85,
+                plPercent: 99.86,
+                plEur: 555.11,
+                purchasePriceCalculated: 124.27,
+                health: "<strong>Salute Ottima.</strong> La redditività dell'e-commerce continua a crescere e AWS accelera spinta dalla forte domanda per l'infrastruttura Cloud/IA.",
+                action: "<strong>TAKE PROFIT PARZIALE O HOLD.</strong> Rendimento vicinissimo al raddoppio (+99.86%). Valutare l'incasso del capitale iniziale o di una frazione del profitto.",
+                badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+                actionBadge: "Take Profit / Hold"
+            },
+            {
+                id: 'serk',
+                name: 'Seri Industrial',
+                symbol: 'SERK',
+                finnhubSymbol: 'SERI.MI',
+                currency: 'EUR',
+                qty: 100,
+                currentPrice: 2.18,
+                marketValueEur: 218.00,
+                plPercent: -72.71,
+                plEur: -573.00,
+                purchasePriceCalculated: 7.99,
+                health: "<strong>Salute Debole / Altamente Speculativa.</strong> Società attiva nell'accumulo elettrico. Impattata da ritardi industriali e volatilità del settore batterie in Europa.",
+                action: "<strong>TAX-LOSS HARVESTING / STOP LOSS.</strong> Calo del -72.71%. Valutare la vendita per contabilizzare la minusvalenza fiscale e riallocare il capitale su titoli più solidi.",
+                badgeColor: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+                actionBadge: "Tax Loss Harvesting"
+            },
+            {
+                id: 'htwo',
+                name: 'L&G Hydrogen Economy ETF',
+                symbol: 'HTWO',
+                finnhubSymbol: 'HTWO.MI',
+                currency: 'EUR',
+                qty: 170,
+                currentPrice: 6.08,
+                marketValueEur: 1033.60,
+                plPercent: 1.10,
+                plEur: 11.29,
+                purchasePriceCalculated: 6.01,
+                health: "<strong>Salute Neutra / Tematica.</strong> ETF focalizzato sull'idrogeno pulito. Settore in fase di transizione e dipendente da sussidi ed enormi capitali d'investimento.",
+                action: "<strong>MANTENERE IN PAREGGIO (Hold / Stop Loss in Pareggio).</strong> Attualmente a +1.10%. Consigliabile inserire uno stop a pareggio (€6.00) per proteggere il capitale.",
+                badgeColor: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+                actionBadge: "Hold con Stop Loss"
+            },
+            {
+                id: 'jmia',
+                name: 'Jumia Technologies',
+                symbol: 'JMIA',
+                finnhubSymbol: 'JMIA',
+                currency: 'USD',
+                qty: 45,
+                currentPrice: 5.65,
+                marketValueUsd: 254.25,
+                plPercent: -62.82,
+                plEur: -369.24,
+                purchasePriceCalculated: 15.20,
+                health: "<strong>Salute Fragile / Turnaround Speculativo.</strong> E-commerce focalizzato sui mercati africani. Subisce forti svalutazioni valutarie e sfide logistiche complesse.",
+                action: "<strong>CHIUSURA / RIDUZIONE ESPOSIZIONE.</strong> Scommessa ad alto rischio. Valutare se liquidare per concentrare le risorse su asset a maggior convinzione.",
+                badgeColor: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+                actionBadge: "Valuta Uscita"
+            },
+            {
+                id: 'spce',
+                name: 'Virgin Galactic Holdings',
+                symbol: 'SPCE',
+                finnhubSymbol: 'SPCE',
+                currency: 'USD',
+                qty: 25,
+                currentPrice: 2.525,
+                marketValueUsd: 63.12,
+                plPercent: -90.89,
+                plEur: -563.70,
+                purchasePriceCalculated: 27.72,
+                health: "<strong>Salute Critica.</strong> Brucia elevate quantità di cassa a fronte di ricavi contenuti. Forte rischio di diluizione azionaria e sostenibilità incerta.",
+                action: "<strong>VENDITA / REGISTRAZIONE MINUSVALENZA.</strong> Posizione residua esigua (~$63). Ha senso tattico chiudere per compensare plusvalenze (es. Amazon).",
+                badgeColor: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+                actionBadge: "Liquidare Posizione"
+            },
+            {
+                id: 'brkb',
+                name: 'Berkshire Hathaway B',
+                symbol: 'BRKb',
+                finnhubSymbol: 'BRK.B',
+                currency: 'USD',
+                qty: 3,
+                currentPrice: 548.02,
+                marketValueUsd: 1644.06,
+                plPercent: 119.61,
+                plEur: 801.06,
+                purchasePriceCalculated: 249.54,
+                health: "<strong>Salute Insuperabile.</strong> Fortezza finanziaria con immensa liquidità, diversificata su assicurazioni, ferrovie ed energia. Ottima protezione macroeconomica.",
+                action: "<strong>MANTENERE A LUNGO TERMINE (Strong Hold).</strong> Rendimento eccellente (+119.61%). Lasciare la posizione intatta affinché continui a capitalizzare.",
+                badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+                actionBadge: "Strong Hold"
+            },
+            {
+                id: 'sndl',
+                name: 'SNDL Inc',
+                symbol: 'SNDL',
+                finnhubSymbol: 'SNDL',
+                currency: 'USD',
+                qty: 60,
+                currentPrice: 1.255,
+                marketValueUsd: 75.30,
+                plPercent: -86.72,
+                plEur: -381.72,
+                purchasePriceCalculated: 9.45,
+                health: "<strong>Salute Speculativa / Penny Stock.</strong> Azienda canadese settore cannabis/liquori. Soffre per la sovraccapacità del mercato e i ritardi normativi negli USA.",
+                action: "<strong>LIQUIDARE.</strong> Capitale residuo limitato (~$75). Conviene chiudere la posizione per semplificare il portafoglio e usufruire delle minusvalenze.",
+                badgeColor: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+                actionBadge: "Liquidare Posizione"
+            }
+        ];
+
+        const EUR_USD_RATE = 1.08;
+        const REFRESH_INTERVAL_SECONDS = 10;
+        let countdown = REFRESH_INTERVAL_SECONDS;
+        let timerId = null;
+        let isAutoRefreshActive = true;
+
+        // Load saved API key on DOM load
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedKey = localStorage.getItem('finnhub_api_key');
+            if (savedKey) {
+                document.getElementById('modalApiKeyInput').value = savedKey;
+                updateApiStatusBadge(true);
+                fetchLivePrices(savedKey);
+            } else {
+                updateApiStatusBadge(false);
+            }
+            renderTable();
+            calculatePortfolioTotals();
+            startAutoRefreshTimer();
+        });
+
+        // Modal Controls
+        function openApiModal() {
+            const savedKey = localStorage.getItem('finnhub_api_key') || '';
+            document.getElementById('modalApiKeyInput').value = savedKey;
+            document.getElementById('apiKeyModal').classList.remove('hidden');
+        }
+
+        function closeApiModal() {
+            document.getElementById('apiKeyModal').classList.add('hidden');
+        }
+
+        function saveApiKeyFromModal() {
+            const key = document.getElementById('modalApiKeyInput').value.trim();
+            if (key) {
+                localStorage.setItem('finnhub_api_key', key);
+                updateApiStatusBadge(true);
+                countdown = REFRESH_INTERVAL_SECONDS;
+                fetchLivePrices(key);
+            } else {
+                localStorage.removeItem('finnhub_api_key');
+                updateApiStatusBadge(false);
+            }
+            closeApiModal();
+        }
+
+        function removeApiKey() {
+            localStorage.removeItem('finnhub_api_key');
+            document.getElementById('modalApiKeyInput').value = '';
+            updateApiStatusBadge(false);
+            closeApiModal();
+        }
+
+        function updateApiStatusBadge(isConnected) {
+            const badge = document.getElementById('apiStatusBadge');
+            if (isConnected) {
+                badge.className = "text-xs font-medium px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5 whitespace-nowrap";
+                badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>🟢 Finnhub Collegato`;
+            } else {
+                badge.className = "text-xs font-medium px-3 py-1 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center gap-1.5 whitespace-nowrap";
+                badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500"></span>🔴 API Non Configurato`;
+            }
+        }
+
+        // Toggle Auto Refresh Play/Pause
+        function toggleAutoRefresh() {
+            isAutoRefreshActive = !isAutoRefreshActive;
+            const icon = document.getElementById('timerIcon');
+            const statusText = document.getElementById('timerStatusText');
+
+            if (isAutoRefreshActive) {
+                icon.className = "fa-solid fa-pause text-amber-400";
+                statusText.innerText = "Auto: 10s";
+            } else {
+                icon.className = "fa-solid fa-play text-emerald-400";
+                statusText.innerText = "In Pausa";
+            }
+        }
+
+        // Timer Loop (runs every 1 second)
+        function startAutoRefreshTimer() {
+            if (timerId) clearInterval(timerId);
+
+            timerId = setInterval(() => {
+                if (!isAutoRefreshActive) return;
+
+                countdown--;
+                if (countdown <= 0) {
+                    countdown = REFRESH_INTERVAL_SECONDS;
+                    const apiKey = localStorage.getItem('finnhub_api_key');
+                    if (apiKey) {
+                        fetchLivePrices(apiKey);
+                    } else {
+                        renderTable(); // Refresh UI timestamp
+                    }
+                }
+                document.getElementById('countdownText').innerText = `${countdown}s`;
+            }, 1000);
+        }
+
+        // Fetch prices from Finnhub API for US stocks
+        async function fetchLivePrices(apiKey) {
+            let updatedAny = false;
+            for (let stock of rawPortfolioData) {
+                if (!stock.finnhubSymbol.endsWith('.MI')) {
+                    try {
+                        const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${stock.finnhubSymbol}&token=${apiKey}`);
+                        const data = await response.json();
+                        if (data && data.c && data.c !== 0) {
+                            stock.currentPrice = data.c;
+                            if (stock.currency === 'USD') {
+                                stock.marketValueUsd = stock.currentPrice * stock.qty;
+                            } else {
+                                stock.marketValueEur = stock.currentPrice * stock.qty;
+                            }
+                            stock.plPercent = ((stock.currentPrice - stock.purchasePriceCalculated) / stock.purchasePriceCalculated) * 100;
+                            
+                            if (stock.currency === 'USD') {
+                                stock.plEur = ((stock.marketValueUsd - (stock.purchasePriceCalculated * stock.qty)) / EUR_USD_RATE);
+                            } else {
+                                stock.plEur = stock.marketValueEur - (stock.purchasePriceCalculated * stock.qty);
+                            }
+                            updatedAny = true;
+                        }
+                    } catch (err) {
+                        console.warn("Impossibile aggiornare " + stock.symbol, err);
+                    }
+                }
+            }
+
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('it-IT');
+            document.getElementById('lastUpdatedTime').innerText = updatedAny 
+                ? `Ultimo refresh Finnhub: ${timeStr}` 
+                : `Ultimo controllo: ${timeStr}`;
+
+            renderTable();
+            calculatePortfolioTotals();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('portfolioTableBody');
+            tbody.innerHTML = '';
+
+            rawPortfolioData.forEach(stock => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-800/60 cursor-pointer transition-colors";
+                tr.onclick = () => showDetails(stock.id);
+
+                const isPositive = stock.plPercent >= 0;
+                const plColorClass = isPositive ? "text-emerald-400" : "text-rose-400";
+                const plSign = isPositive ? "+" : "";
+                const currSymbol = stock.currency === 'USD' ? '$' : '€';
+
+                const marketValueText = stock.currency === 'USD' 
+                    ? `$${stock.marketValueUsd.toFixed(2)}`
+                    : `€${stock.marketValueEur.toFixed(2)}`;
+
+                tr.innerHTML = `
+                    <td class="py-3.5 px-4 font-medium text-white whitespace-nowrap">
+                        <div class="flex items-center gap-2">
+                            <span class="font-semibold text-slate-100">${stock.name}</span>
+                            <span class="text-xs font-mono text-blue-400 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">${stock.symbol}</span>
+                        </div>
+                    </td>
+                    <td class="py-3.5 px-3 text-center text-slate-300 font-mono whitespace-nowrap">${stock.qty}</td>
+                    <td class="py-3.5 px-3 text-right font-mono text-slate-300 whitespace-nowrap">${currSymbol}${stock.purchasePriceCalculated.toFixed(2)}</td>
+                    <td class="py-3.5 px-3 text-right font-mono font-medium text-white whitespace-nowrap">${currSymbol}${stock.currentPrice.toFixed(2)}</td>
+                    <td class="py-3.5 px-4 text-right font-mono text-slate-200 font-medium whitespace-nowrap">${marketValueText}</td>
+                    <td class="py-3.5 px-3 text-right font-mono font-semibold ${plColorClass} whitespace-nowrap">${plSign}${stock.plPercent.toFixed(2)}%</td>
+                    <td class="py-3.5 px-4 text-right font-mono font-semibold ${plColorClass} whitespace-nowrap">${plSign}€${Math.abs(stock.plEur).toFixed(2)}</td>
+                    <td class="py-3.5 px-3 text-center whitespace-nowrap">
+                        <span class="text-xs px-2.5 py-1 rounded-full border font-medium ${stock.badgeColor} whitespace-nowrap inline-block">
+                            ${isPositive ? 'In Profitto' : 'In Perdita'}
+                        </span>
+                    </td>
+                    <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                        <span class="text-xs px-3 py-1 rounded-md font-medium bg-slate-800 text-slate-200 border border-slate-700 whitespace-nowrap inline-block shadow-sm">
+                            ${stock.actionBadge}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function calculatePortfolioTotals() {
+            let totalMarketValEur = 0;
+            let totalInvestedEur = 0;
+            let totalPLEur = 0;
+
+            rawPortfolioData.forEach(stock => {
+                let mValEur = 0;
+                let investedEur = 0;
+
+                if (stock.currency === 'USD') {
+                    mValEur = stock.marketValueUsd / EUR_USD_RATE;
+                    investedEur = (stock.purchasePriceCalculated * stock.qty) / EUR_USD_RATE;
+                } else {
+                    mValEur = stock.marketValueEur;
+                    investedEur = stock.purchasePriceCalculated * stock.qty;
+                }
+
+                totalMarketValEur += mValEur;
+                totalInvestedEur += investedEur;
+                totalPLEur += stock.plEur;
+            });
+
+            const overallPercent = ((totalMarketValEur - totalInvestedEur) / totalInvestedEur) * 100;
+
+            document.getElementById('totalInvested').innerText = `€${totalInvestedEur.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('totalMarketValue').innerText = `€${totalMarketValEur.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            
+            const plElem = document.getElementById('totalPL');
+            const plPctElem = document.getElementById('totalPLPercent');
+
+            const isPos = totalPLEur >= 0;
+            plElem.innerText = `${isPos ? '+' : ''}€${totalPLEur.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            plElem.className = `text-2xl font-bold mt-2 ${isPos ? 'text-emerald-400' : 'text-rose-400'}`;
+
+            plPctElem.innerText = `${isPos ? '+' : ''}${overallPercent.toFixed(2)}% Totale Portafoglio`;
+            plPctElem.className = `text-xs mt-1 font-semibold ${isPos ? 'text-emerald-400' : 'text-rose-400'}`;
+        }
+
+        function showDetails(stockId) {
+            const stock = rawPortfolioData.find(s => s.id === stockId);
+            if (!stock) return;
+
+            const section = document.getElementById('detailSection');
+            section.classList.remove('hidden');
+
+            document.getElementById('modalTitle').innerText = stock.name;
+            document.getElementById('modalSymbolBadge').innerText = stock.symbol;
+            document.getElementById('modalCurrencyBadge').innerText = stock.currency;
+
+            const currSymbol = stock.currency === 'USD' ? '$' : '€';
+            document.getElementById('modalSubInfo').innerText = `Quantità: ${stock.qty} | Prezzo d'Acquisto Stimato: ${currSymbol}${stock.purchasePriceCalculated.toFixed(2)} | Attuale: ${currSymbol}${stock.currentPrice.toFixed(2)}`;
+
+            const isPos = stock.plPercent >= 0;
+            const plVal = document.getElementById('modalPLValue');
+            const plPct = document.getElementById('modalPLPercent');
+
+            plVal.innerText = `${isPos ? '+' : ''}€${Math.abs(stock.plEur).toFixed(2)}`;
+            plVal.className = `text-xl font-bold ${isPos ? 'text-emerald-400' : 'text-rose-400'}`;
+
+            plPct.innerText = `${isPos ? '+' : ''}${stock.plPercent.toFixed(2)}%`;
+            plPct.className = `text-xl font-bold ${isPos ? 'text-emerald-400' : 'text-rose-400'}`;
+
+            document.getElementById('modalHealthText').innerHTML = stock.health;
+            document.getElementById('modalActionText').innerHTML = stock.action;
+
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function closeDetails() {
+            document.getElementById('detailSection').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
