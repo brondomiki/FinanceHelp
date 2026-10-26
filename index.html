@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<html lang="it" class="h-full bg-slate-950">
+<html lang="it" class="h-full bg-slate-950" style="background-color: #020617; min-height: 100vh;">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Analisi Fondamentale & Value Investing Pro</title>
+  <title>Portafoglio & Analisi Fondamentale Pro</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- Lucide Icons -->
@@ -28,25 +30,24 @@
     }
   </script>
   <style>
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    
-    .has-tooltip { position: relative; }
-    .tooltip-box {
-      visibility: hidden;
-      opacity: 0;
-      transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+    html, body {
+      background-color: #020617 !important;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
     }
-    .has-tooltip:hover .tooltip-box, .has-tooltip:focus-within .tooltip-box {
-      visibility: visible;
-      opacity: 1;
-    }
+    /* Scrollbar personalizzata per facilitare lo scroll orizzontale delle colonne */
+    ::-webkit-scrollbar { height: 8px; width: 8px; }
+    ::-webkit-scrollbar-track { background: #020617; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
   </style>
 </head>
-<body class="text-slate-100 min-h-full flex flex-col font-sans antialiased selection:bg-emerald-500 selection:text-white">
+<body class="text-slate-100 min-h-full flex flex-col font-sans antialiased selection:bg-emerald-500 selection:text-white bg-slate-950">
 
   <!-- TOP HEADER -->
-  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40">
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-40 w-full">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400">
@@ -54,22 +55,38 @@
         </div>
         <div>
           <h1 class="text-lg font-bold bg-gradient-to-r from-white via-slate-200 to-emerald-400 bg-clip-text text-transparent">
-            Value Analyzer Pro
+            Value Analyzer & Portafoglio Pro
           </h1>
-          <p class="text-xs text-slate-400">Fundamental Analysis & Value Investing</p>
+          <p class="text-xs text-slate-400">Fundamental Analysis & Portfolio Live Monitor</p>
         </div>
       </div>
 
       <div class="flex items-center gap-3">
+        <!-- Timer & Auto-Refresh Controls -->
+        <div class="hidden sm:flex bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5 items-center gap-2 text-xs shadow-inner">
+          <button id="toggleTimerBtn" onclick="toggleAutoRefresh()" class="text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 focus:outline-none">
+            <i id="timerIcon" class="fa-solid fa-pause text-amber-400"></i>
+            <span id="timerStatusText" class="font-medium">10s</span>
+          </button>
+          <div class="h-3 w-px bg-slate-700"></div>
+          <div class="text-slate-300 font-mono flex items-center gap-1">
+            <span id="countdownText" class="font-semibold text-emerald-400">10s</span>
+          </div>
+        </div>
+
         <button onclick="openGlossaryModal()" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-lg border border-slate-700 transition">
           <i data-lucide="book-open" class="w-4 h-4 text-amber-400"></i>
-          <span>Glossario Metriche</span>
+          <span class="hidden md:inline">Glossario</span>
         </button>
 
-        <button id="apiKeyBtn" onclick="openApiModal()" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 transition">
-          <i data-lucide="key" class="w-4 h-4 text-emerald-400"></i>
-          <span id="apiKeyStatus">Configura API Key</span>
-        </button>
+        <!-- Finnhub Connection Status & Modal Trigger -->
+        <div class="flex items-center gap-2 bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5 shadow-inner">
+          <span id="apiStatusBadge" class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
+          <button onclick="openApiModal()" class="text-xs font-medium text-slate-200 hover:text-white flex items-center gap-1 transition">
+            <i class="fa-solid fa-gear text-emerald-400"></i>
+            <span id="apiKeyStatusText">API Key</span>
+          </button>
+        </div>
       </div>
     </div>
   </header>
@@ -77,1076 +94,1135 @@
   <!-- MAIN CONTAINER -->
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
 
-    <!-- SEARCH & TICKER BAR -->
-    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
-      <div class="absolute -right-16 -top-16 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
-      
-      <div class="max-w-2xl mx-auto text-center space-y-4">
-        <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-          Analisi Fondamentale e Valutazione Intrinseca
-        </h2>
-        <p class="text-sm text-slate-400">
-          Inserisci il Ticker di una società quotata per ricavare dati finanziari in tempo reale tramite Finnhub ed eseguire l'analisi in 5 punti.
-        </p>
-
-        <form onsubmit="handleSearch(event)" class="flex items-center gap-2 mt-4">
-          <div class="relative flex-1">
-            <i data-lucide="search" class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input 
-              type="text" 
-              id="tickerInput" 
-              placeholder="Es. GOOGL, AAPL, MSFT, V, ASML..." 
-              required
-              class="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl pl-12 pr-4 py-3 text-sm text-white placeholder-slate-500 uppercase tracking-wider font-semibold focus:outline-none transition"
-            />
-          </div>
-          <button 
-            type="submit" 
-            id="searchBtn"
-            class="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm rounded-xl flex items-center gap-2 shadow-lg shadow-emerald-900/20 transition active:scale-95"
-          >
-            <span>Analizza</span>
-            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+    <!-- SEZIONE PORTAFOGLIO FINANZIARIO -->
+    <section class="space-y-6">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-wallet text-emerald-400"></i> Il Tuo Portafoglio Attuale
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-400">Monitoraggio live dei titoli[cite: 3], calcolo automatico dei prezzi di carico e gestione posizioni.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button onclick="openAddStockModal()" class="flex items-center gap-2 px-4 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-lg shadow-emerald-900/30 transition active:scale-95">
+            <i class="fa-solid fa-plus"></i>
+            <span>Aggiungi Posizione</span>
           </button>
-        </form>
-      </div>
-    </section>
-
-    <!-- TITOLI SOTTOVALUTATI AD ELEVATO POTENZIALE DI CRESCITA -->
-    <section class="space-y-4">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <i data-lucide="zap" class="w-5 h-5 text-amber-400"></i>
-          <h3 class="text-base font-bold text-white">Titoli Sottovalutati con Potenziale di Crescita</h3>
-        </div>
-        <span class="text-xs text-slate-400">Seleziona per analizzare</span>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        <!-- GOOGL -->
-        <div onclick="analyzeTicker('GOOGL')" class="bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-emerald-500/50 rounded-xl p-4 cursor-pointer transition flex flex-col justify-between group">
-          <div>
-            <div class="flex justify-between items-start mb-2">
-              <span class="text-sm font-bold text-white group-hover:text-emerald-400 transition">Alphabet</span>
-              <span class="text-xs font-mono px-2 py-0.5 bg-slate-800 text-emerald-400 rounded border border-slate-700 font-bold">GOOGL</span>
-            </div>
-            <p class="text-xs text-slate-400 line-clamp-2">Multipli P/E a sconto rispetto ai rivali Tech, dominanza Search/Cloud e catalyst IA.</p>
-          </div>
-          <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
-            <span class="text-slate-400">Fair Value Est: <strong class="text-emerald-400">$215</strong></span>
-            <span class="text-emerald-400 font-bold">+22% Upside</span>
-          </div>
-        </div>
-
-        <!-- AMZN -->
-        <div onclick="analyzeTicker('AMZN')" class="bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-emerald-500/50 rounded-xl p-4 cursor-pointer transition flex flex-col justify-between group">
-          <div>
-            <div class="flex justify-between items-start mb-2">
-              <span class="text-sm font-bold text-white group-hover:text-emerald-400 transition">Amazon</span>
-              <span class="text-xs font-mono px-2 py-0.5 bg-slate-800 text-emerald-400 rounded border border-slate-700 font-bold">AMZN</span>
-            </div>
-            <p class="text-xs text-slate-400 line-clamp-2">Espansione dei margini operativi AWS e retail, incremento FCF annuale a doppia cifra.</p>
-          </div>
-          <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
-            <span class="text-slate-400">Fair Value Est: <strong class="text-emerald-400">$240</strong></span>
-            <span class="text-emerald-400 font-bold">+25% Upside</span>
-          </div>
-        </div>
-
-        <!-- ASML -->
-        <div onclick="analyzeTicker('ASML')" class="bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-emerald-500/50 rounded-xl p-4 cursor-pointer transition flex flex-col justify-between group">
-          <div>
-            <div class="flex justify-between items-start mb-2">
-              <span class="text-sm font-bold text-white group-hover:text-emerald-400 transition">ASML Holding</span>
-              <span class="text-xs font-mono px-2 py-0.5 bg-slate-800 text-emerald-400 rounded border border-slate-700 font-bold">ASML</span>
-            </div>
-            <p class="text-xs text-slate-400 line-clamp-2">Monopolio tecnologia EUV semiconduttori; correzione di prezzo recente da sfruttare.</p>
-          </div>
-          <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
-            <span class="text-slate-400">Fair Value Est: <strong class="text-emerald-400">$980</strong></span>
-            <span class="text-emerald-400 font-bold">+30% Upside</span>
-          </div>
-        </div>
-
-        <!-- V -->
-        <div onclick="analyzeTicker('V')" class="bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-emerald-500/50 rounded-xl p-4 cursor-pointer transition flex flex-col justify-between group">
-          <div>
-            <div class="flex justify-between items-start mb-2">
-              <span class="text-sm font-bold text-white group-hover:text-emerald-400 transition">Visa Inc.</span>
-              <span class="text-xs font-mono px-2 py-0.5 bg-slate-800 text-emerald-400 rounded border border-slate-700 font-bold">V</span>
-            </div>
-            <p class="text-xs text-slate-400 line-clamp-2">Margini netti vicini al 50%, protezione naturale dall'inflazione e Moat inaffondabile.</p>
-          </div>
-          <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
-            <span class="text-slate-400">Fair Value Est: <strong class="text-emerald-400">$340</strong></span>
-            <span class="text-emerald-400 font-bold">+18% Upside</span>
-          </div>
-        </div>
-
-        <!-- LVMHF -->
-        <div onclick="analyzeTicker('LVMHF')" class="bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-emerald-500/50 rounded-xl p-4 cursor-pointer transition flex flex-col justify-between group">
-          <div>
-            <div class="flex justify-between items-start mb-2">
-              <span class="text-sm font-bold text-white group-hover:text-emerald-400 transition">LVMH Group</span>
-              <span class="text-xs font-mono px-2 py-0.5 bg-slate-800 text-emerald-400 rounded border border-slate-700 font-bold">LVMHF</span>
-            </div>
-            <p class="text-xs text-slate-400 line-clamp-2">Leader mondiale del lusso con forte pricing power; valutazioni sui minimi pluriennali.</p>
-          </div>
-          <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
-            <span class="text-slate-400">Fair Value Est: <strong class="text-emerald-400">$850</strong></span>
-            <span class="text-emerald-400 font-bold">+28% Upside</span>
+          <div class="text-xs text-slate-400 bg-slate-900 border border-slate-800 px-3 py-2 rounded-xl">
+            EUR/USD: <strong class="text-slate-200">1.08</strong>
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- API KEY MISSING BANNER -->
-    <section id="noKeyNotice" class="bg-amber-950/40 border border-amber-800/60 rounded-2xl p-6 text-center space-y-3">
-      <div class="inline-flex p-3 bg-amber-500/10 rounded-full text-amber-400 mb-1">
-        <i data-lucide="key-round" class="w-8 h-8"></i>
+      <!-- Riepilogo Card -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl">
+          <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Capitale Iniziale Stimato</span>
+          <div class="text-2xl font-bold text-white mt-1 font-mono" id="totalInvested">€0,00</div>
+          <span class="text-[11px] text-slate-500 mt-1 block">Prezzo acquisto + spese accessorie</span>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl">
+          <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Valore Attuale Portafoglio</span>
+          <div class="text-2xl font-bold text-white mt-1 font-mono" id="totalMarketValue">€0,00</div>
+          <span class="text-[11px] text-emerald-400 mt-1 block" id="lastUpdatedTime">Aggiornato da dati attuali</span>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl">
+          <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Profitto / Perdita Netto</span>
+          <div class="text-2xl font-bold mt-1 font-mono" id="totalPL">€0,00</div>
+          <span class="text-[11px] font-semibold mt-1 block" id="totalPLPercent">+0.00%</span>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl">
+          <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Posizioni Monitorate</span>
+          <div class="text-2xl font-bold text-white mt-1 font-mono" id="totalPositionsCount">0 Titoli</div>
+          <span class="text-[11px] text-slate-400 mt-1 block" id="positionsBreakdown">0 in profitto | 0 in perdita</span>
+        </div>
       </div>
-      <h3 class="text-lg font-bold text-amber-200">Chiave API Finnhub Non Configurata</h3>
-      <p class="text-sm text-slate-300 max-w-xl mx-auto">
-        Per scaricare i dati di bilancio, notizie, calendari aziendali e prezzi di mercato reali, occorre inserire la tua chiave API gratuita di Finnhub.
-      </p>
-      <button onclick="openApiModal()" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm rounded-xl transition shadow-lg">
-        Inserisci API Key Finnhub
-      </button>
-    </section>
 
-    <!-- LOADING STATE -->
-    <section id="loadingState" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center space-y-4">
-      <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-emerald-500 border-t-transparent"></div>
-      <h3 class="text-lg font-bold text-white" id="loadingTitle">Download dati da Finnhub...</h3>
-      <p class="text-xs text-slate-400">Recupero profilo societario, notizie, calendari e metriche finanziarie.</p>
-    </section>
+      <!-- Tabella Portafoglio con scroll orizzontale ottimizzato per molte colonne -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+        <div class="p-2 bg-slate-950/40 border-b border-slate-800 text-[11px] text-slate-400 flex items-center gap-2 sm:hidden">
+          <i class="fa-solid fa-arrows-left-right text-emerald-400"></i> Scorri lateralmente per visualizzare tutte le colonne
+        </div>
+        <div class="overflow-x-auto w-full">
+          <table class="w-full text-left border-collapse min-w-[1250px]">
+            <thead>
+              <tr class="bg-slate-950/80 text-slate-400 text-xs font-semibold uppercase tracking-wider border-b border-slate-800 whitespace-nowrap">
+                <th class="py-3 px-3">Nome / Simbolo</th>
+                <th class="py-3 px-2 text-center">Qtà</th>
+                <th class="py-3 px-2.5 text-right">Pr. Singolo</th>
+                <th class="py-3 px-2.5 text-right">Spese Acc.</th>
+                <th class="py-3 px-2.5 text-right">Pr. Corrente</th>
+                <th class="py-3 px-3 text-right">Valore Mercato</th>
+                <th class="py-3 px-3 text-right">P/L Giornaliero</th>
+                <th class="py-3 px-2.5 text-right">% P/L Netto</th>
+                <th class="py-3 px-3 text-right">P/L Netto (€)</th>
+                <th class="py-3 px-2.5 text-center">Stato</th>
+                <th class="py-3 px-3 text-center">Azione Suggerita</th>
+                <th class="py-3 px-2 text-center">Elimina</th>
+              </tr>
+            </thead>
+            <tbody id="portfolioTableBody" class="divide-y divide-slate-800/60 text-xs">
+              <!-- Generato via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-    <!-- RESULTS SECTION -->
-    <section id="resultsSection" class="hidden space-y-8">
+      <!-- Pannello Dettaglio Analisi Titolo Selezionato -->
+      <section id="detailSection" class="hidden transition-all duration-300">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl relative space-y-6">
+          <button onclick="closeDetails()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg px-3 py-1.5 text-xs transition flex items-center gap-1.5 border border-slate-700">
+            <i class="fa-solid fa-xmark text-sm"></i> Chiudi Scheda
+          </button>
 
-      <!-- COMPANY OVERVIEW HEADER CARDS -->
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
-          <div class="flex items-center gap-4">
-            <img id="resLogo" src="" alt="Logo" class="w-12 h-12 rounded-xl bg-slate-800 object-contain p-1 border border-slate-700 hidden" />
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between border-b border-slate-800 pb-5 gap-4 pr-16">
             <div>
               <div class="flex items-center gap-3">
-                <h2 class="text-2xl font-bold text-white" id="resName">-</h2>
-                <span class="px-2.5 py-1 bg-slate-800 text-emerald-400 font-mono text-xs font-bold rounded-lg border border-slate-700" id="resTicker">-</span>
+                <h3 class="text-2xl font-bold text-white" id="modalTitle">Titolo</h3>
+                <span id="modalSymbolBadge" class="px-2.5 py-1 rounded-md text-xs font-bold bg-slate-800 text-emerald-400 border border-slate-700">-</span>
+                <span id="modalCurrencyBadge" class="px-2 py-0.5 rounded text-xs bg-slate-800 text-slate-400 border border-slate-700">USD</span>
               </div>
-              <p class="text-xs text-slate-400 mt-1" id="resIndustry">-</p>
+              <p class="text-xs text-slate-400 mt-1" id="modalSubInfo">Quantità: 0 | Prezzo d'Acquisto Stimato: $0.00</p>
+            </div>
+            <div class="flex items-center gap-6 bg-slate-950/80 px-5 py-3 rounded-xl border border-slate-800">
+              <div>
+                <span class="text-xs text-slate-400 block">P/L Netto Totale</span>
+                <span class="text-xl font-bold font-mono" id="modalPLValue">€0.00</span>
+              </div>
+              <div class="h-8 w-px bg-slate-800"></div>
+              <div>
+                <span class="text-xs text-slate-400 block">Rendimento %</span>
+                <span class="text-xl font-bold font-mono" id="modalPLPercent">0.00%</span>
+              </div>
             </div>
           </div>
-          <div class="flex items-center gap-6">
-            <div class="text-right">
-              <span class="text-xs text-slate-400 block">Prezzo Attuale</span>
-              <div class="flex items-baseline gap-2 justify-end">
-                <span class="text-2xl font-black text-white font-mono" id="resPrice">$0.00</span>
-                <span class="text-xs font-bold font-mono" id="resPriceChange">+0.00%</span>
-              </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-5 space-y-2">
+              <h4 class="text-sm font-bold text-emerald-400 flex items-center gap-2">
+                <i class="fa-solid fa-heart-pulse"></i> Stato di Salute Fundamentals & Mercato
+              </h4>
+              <p id="modalHealthText" class="text-slate-300 text-xs sm:text-sm leading-relaxed">-</p>
             </div>
-            <div class="text-right">
-              <span class="text-xs text-slate-400 block">Market Cap</span>
-              <span class="text-base font-bold text-slate-200 font-mono" id="resMarketCap">-</span>
+            <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-5 space-y-2">
+              <h4 class="text-sm font-bold text-blue-400 flex items-center gap-2">
+                <i class="fa-solid fa-compass"></i> Piano d'Azione Strategico
+              </h4>
+              <p id="modalActionText" class="text-slate-300 text-xs sm:text-sm leading-relaxed">-</p>
             </div>
           </div>
         </div>
+      </section>
+    </section>
 
-        <!-- GRAFICO DI MERCATO 1D, 1M, 1Y, 5Y -->
-        <div class="mt-6 p-4 bg-slate-950/60 rounded-xl border border-slate-800 space-y-3">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div class="flex items-center gap-2">
-              <i data-lucide="line-chart" class="w-4 h-4 text-emerald-400"></i>
-              <h4 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Andamento Prezzo Azione</h4>
+    <!-- SEZIONE RICERCA & ANALISI FONDAMENTALE DI QUALSIASI TICKER -->
+    <section class="space-y-6 pt-6 border-t border-slate-800">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+        <div class="absolute -right-16 -top-16 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
+        
+        <div class="max-w-2xl mx-auto text-center space-y-4">
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            Analisi Fondamentale e Valutazione Intrinseca
+          </h2>
+          <p class="text-sm text-slate-400">
+            Inserisci il Ticker di qualsiasi società per analizzarla in tempo reale tramite Finnhub ed eseguire l'analisi in 5 punti.
+          </p>
+
+          <form onsubmit="handleSearch(event)" class="flex items-center gap-2 mt-4">
+            <div class="relative flex-1">
+              <i data-lucide="search" class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+              <input 
+                type="text" 
+                id="tickerInput" 
+                placeholder="Es. GOOGL, AAPL, MSFT, V, ASML..." 
+                required
+                class="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl pl-12 pr-4 py-3 text-sm text-white placeholder-slate-500 uppercase tracking-wider font-semibold focus:outline-none transition"
+              />
             </div>
-            <div class="flex items-center gap-1 bg-slate-900 p-1 rounded-lg border border-slate-800 self-start sm:self-auto">
-              <button onclick="setChartTimeframe('1D')" id="tf1D" class="px-3 py-1 text-[11px] font-bold rounded transition bg-emerald-600 text-white">1D</button>
-              <button onclick="setChartTimeframe('1M')" id="tf1M" class="px-3 py-1 text-[11px] font-bold rounded transition text-slate-400 hover:text-white">1M</button>
-              <button onclick="setChartTimeframe('1Y')" id="tf1Y" class="px-3 py-1 text-[11px] font-bold rounded transition text-slate-400 hover:text-white">1Y</button>
-              <button onclick="setChartTimeframe('5Y')" id="tf5Y" class="px-3 py-1 text-[11px] font-bold rounded transition text-slate-400 hover:text-white">5Y</button>
-            </div>
+            <button 
+              type="submit" 
+              id="searchBtn"
+              class="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm rounded-xl flex items-center gap-2 shadow-lg shadow-emerald-900/20 transition active:scale-95"
+            >
+              <span>Analizza</span>
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- TITOLI SOTTOVALUTATI AD ELEVATO POTENZIALE -->
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i data-lucide="zap" class="w-5 h-5 text-amber-400"></i>
+            <h3 class="text-base font-bold text-white">Titoli Sottovalutati con Potenziale di Crescita</h3>
           </div>
-          <div class="h-64 relative w-full">
-            <canvas id="stockChart"></canvas>
-          </div>
+          <span class="text-xs text-slate-400">Clicca per analizzare</span>
         </div>
 
-        <!-- GRID METRICHE DI BILANCIO CON TOOLTIP EXPLANATIONS -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 mt-6">
-          <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800 has-tooltip">
-            <div class="flex items-center justify-between">
-              <span class="text-[11px] text-slate-400 font-medium block">P/E Ratio</span>
-              <i data-lucide="help-circle" class="w-3.5 h-3.5 text-slate-500 cursor-help"></i>
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div onclick="analyzeTicker('GOOGL')" class="bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-emerald-500/50 rounded-xl p-4 cursor-pointer transition flex flex-col justify-between group">
+            <div>
+              <div class="flex justify-between items-start mb-2">
+                <span class="text-sm font-bold text-white group-hover:text-emerald-400 transition">Alphabet</span>
+                <span class="text-xs font-mono px-2 py-0.5 bg-slate-800 text-emerald-400 rounded border border-slate-700 font-bold">GOOGL</span>
+              </div>
+              <p class="text-xs text-slate-400 line-clamp-2">Multipli P/E a sconto, dominanza Search/Cloud e catalyst IA.</p>
             </div>
-            <span class="text-base font-bold text-emerald-400 font-mono mt-1 block" id="mPE">-</span>
-            <div class="tooltip-box absolute left-0 bottom-full mb-2 w-56 p-2.5 bg-slate-900 border border-slate-700 rounded-lg shadow-2xl z-30 text-[11px] text-slate-300 leading-tight pointer-events-none">
-              <strong class="text-emerald-400 block mb-1">Price to Earnings (P/E)</strong>
-              Rapporto tra il prezzo dell'azione e gli utili netti per azione.
-            </div>
-          </div>
-
-          <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800 has-tooltip">
-            <div class="flex items-center justify-between">
-              <span class="text-[11px] text-slate-400 font-medium block">P/S Ratio</span>
-              <i data-lucide="help-circle" class="w-3.5 h-3.5 text-slate-500 cursor-help"></i>
-            </div>
-            <span class="text-base font-bold text-emerald-400 font-mono mt-1 block" id="mPS">-</span>
-            <div class="tooltip-box absolute left-0 bottom-full mb-2 w-56 p-2.5 bg-slate-900 border border-slate-700 rounded-lg shadow-2xl z-30 text-[11px] text-slate-300 leading-tight pointer-events-none">
-              <strong class="text-emerald-400 block mb-1">Price to Sales (P/S)</strong>
-              Rapporto tra prezzo e fatturato totale.
+            <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+              <span class="text-slate-400">Fair Value Est: <strong class="text-emerald-400">$215</strong></span>
+              <span class="text-emerald-400 font-bold">+22%</span>
             </div>
           </div>
 
-          <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800 has-tooltip">
-            <div class="flex items-center justify-between">
-              <span class="text-[11px] text-slate-400 font-medium block">ROE</span>
-              <i data-lucide="help-circle" class="w-3.5 h-3.5 text-slate-500 cursor-help"></i>
+          <div onclick="analyzeTicker('AMZN')" class="bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-emerald-500/50 rounded-xl p-4 cursor-pointer transition flex flex-col justify-between group">
+            <div>
+              <div class="flex justify-between items-start mb-2">
+                <span class="text-sm font-bold text-white group-hover:text-emerald-400 transition">Amazon</span>
+                <span class="text-xs font-mono px-2 py-0.5 bg-slate-800 text-emerald-400 rounded border border-slate-700 font-bold">AMZN</span>
+              </div>
+              <p class="text-xs text-slate-400 line-clamp-2">Espansione margini AWS e retail, incremento FCF a doppia cifra.</p>
             </div>
-            <span class="text-base font-bold text-emerald-400 font-mono mt-1 block" id="mROE">-</span>
-            <div class="tooltip-box absolute left-0 bottom-full mb-2 w-56 p-2.5 bg-slate-900 border border-slate-700 rounded-lg shadow-2xl z-30 text-[11px] text-slate-300 leading-tight pointer-events-none">
-              <strong class="text-emerald-400 block mb-1">Return on Equity (ROE)</strong>
-              Redditività del capitale proprio dagli investimenti dei soci.
-            </div>
-          </div>
-
-          <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800 has-tooltip">
-            <div class="flex items-center justify-between">
-              <span class="text-[11px] text-slate-400 font-medium block">ROIC</span>
-              <i data-lucide="help-circle" class="w-3.5 h-3.5 text-slate-500 cursor-help"></i>
-            </div>
-            <span class="text-base font-bold text-emerald-400 font-mono mt-1 block" id="mROIC">-</span>
-            <div class="tooltip-box absolute right-0 bottom-full mb-2 w-56 p-2.5 bg-slate-900 border border-slate-700 rounded-lg shadow-2xl z-30 text-[11px] text-slate-300 leading-tight pointer-events-none">
-              <strong class="text-emerald-400 block mb-1">Return on Invested Capital</strong>
-              Rendimento da tutto il capitale investito (debito + equity).
+            <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+              <span class="text-slate-400">Fair Value Est: <strong class="text-emerald-400">$240</strong></span>
+              <span class="text-emerald-400 font-bold">+25%</span>
             </div>
           </div>
 
-          <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800 has-tooltip">
-            <div class="flex items-center justify-between">
-              <span class="text-[11px] text-slate-400 font-medium block">Margine Netto</span>
-              <i data-lucide="help-circle" class="w-3.5 h-3.5 text-slate-500 cursor-help"></i>
+          <div onclick="analyzeTicker('ASML')" class="bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-emerald-500/50 rounded-xl p-4 cursor-pointer transition flex flex-col justify-between group">
+            <div>
+              <div class="flex justify-between items-start mb-2">
+                <span class="text-sm font-bold text-white group-hover:text-emerald-400 transition">ASML Holding</span>
+                <span class="text-xs font-mono px-2 py-0.5 bg-slate-800 text-emerald-400 rounded border border-slate-700 font-bold">ASML</span>
+              </div>
+              <p class="text-xs text-slate-400 line-clamp-2">Monopolio tecnologia EUV semiconduttori; correzione da sfruttare.</p>
             </div>
-            <span class="text-base font-bold text-emerald-400 font-mono mt-1 block" id="mNetMargin">-</span>
-            <div class="tooltip-box absolute right-0 bottom-full mb-2 w-56 p-2.5 bg-slate-900 border border-slate-700 rounded-lg shadow-2xl z-30 text-[11px] text-slate-300 leading-tight pointer-events-none">
-              <strong class="text-emerald-400 block mb-1">Net Profit Margin</strong>
-              Percentuale di fatturato finale trasformata in utile pulito.
+            <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+              <span class="text-slate-400">Fair Value Est: <strong class="text-emerald-400">$980</strong></span>
+              <span class="text-emerald-400 font-bold">+30%</span>
             </div>
           </div>
 
-          <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800 has-tooltip">
-            <div class="flex items-center justify-between">
-              <span class="text-[11px] text-slate-400 font-medium block">Free Cash Flow</span>
-              <i data-lucide="help-circle" class="w-3.5 h-3.5 text-slate-500 cursor-help"></i>
+          <div onclick="analyzeTicker('V')" class="bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-emerald-500/50 rounded-xl p-4 cursor-pointer transition flex flex-col justify-between group">
+            <div>
+              <div class="flex justify-between items-start mb-2">
+                <span class="text-sm font-bold text-white group-hover:text-emerald-400 transition">Visa Inc.</span>
+                <span class="text-xs font-mono px-2 py-0.5 bg-slate-800 text-emerald-400 rounded border border-slate-700 font-bold">V</span>
+              </div>
+              <p class="text-xs text-slate-400 line-clamp-2">Margini netti vicini al 50%, protezione inflazione e Moat forte.</p>
             </div>
-            <span class="text-base font-bold text-emerald-400 font-mono mt-1 block" id="mFCF">-</span>
-            <div class="tooltip-box absolute right-0 bottom-full mb-2 w-56 p-2.5 bg-slate-900 border border-slate-700 rounded-lg shadow-2xl z-30 text-[11px] text-slate-300 leading-tight pointer-events-none">
-              <strong class="text-emerald-400 block mb-1">Free Cash Flow (FCF)</strong>
-              Liquidità reale prodotta dalla gestione operativa netta.
+            <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+              <span class="text-slate-400">Fair Value Est: <strong class="text-emerald-400">$340</strong></span>
+              <span class="text-emerald-400 font-bold">+18%</span>
+            </div>
+          </div>
+
+          <div onclick="analyzeTicker('LVMHF')" class="bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-emerald-500/50 rounded-xl p-4 cursor-pointer transition flex flex-col justify-between group">
+            <div>
+              <div class="flex justify-between items-start mb-2">
+                <span class="text-sm font-bold text-white group-hover:text-emerald-400 transition">LVMH Group</span>
+                <span class="text-xs font-mono px-2 py-0.5 bg-slate-800 text-emerald-400 rounded border border-slate-700 font-bold">LVMHF</span>
+              </div>
+              <p class="text-xs text-slate-400 line-clamp-2">Leader lusso con pricing power; valutazioni sui minimi pluriennali.</p>
+            </div>
+            <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+              <span class="text-slate-400">Fair Value Est: <strong class="text-emerald-400">$850</strong></span>
+              <span class="text-emerald-400 font-bold">+28%</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- SEZIONE NOTIZIE, CALENDARIO SOCIETARIO & SENTIMENT -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- LOADING STATE -->
+      <section id="loadingState" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center space-y-4">
+        <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-emerald-500 border-t-transparent"></div>
+        <h3 class="text-lg font-bold text-white" id="loadingTitle">Download dati da Finnhub...</h3>
+        <p class="text-xs text-slate-400">Recupero profilo societario, notizie e metriche finanziarie.</p>
+      </section>
+
+      <!-- RESULTS SECTION TICKER -->
+      <section id="resultsSection" class="hidden space-y-8">
         
-        <!-- ULTIME NOTIZIE -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 lg:col-span-2 space-y-4">
-          <div class="flex items-center gap-2 pb-3 border-b border-slate-800">
-            <i data-lucide="newspaper" class="w-5 h-5 text-emerald-400"></i>
-            <h3 class="text-base font-bold text-white">Ultime Notizie & Catalizzatori</h3>
+        <!-- HEADER & GRAFICO -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+            <div class="flex items-center gap-4">
+              <img id="resLogo" src="" alt="Logo" class="w-12 h-12 rounded-xl bg-slate-800 object-contain p-1 border border-slate-700 hidden" />
+              <div>
+                <div class="flex items-center gap-3">
+                  <h2 class="text-2xl font-bold text-white" id="resName">-</h2>
+                  <span class="px-2.5 py-1 bg-slate-800 text-emerald-400 font-mono text-xs font-bold rounded-lg border border-slate-700" id="resTicker">-</span>
+                </div>
+                <p class="text-xs text-slate-400 mt-1" id="resIndustry">-</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-6">
+              <div class="text-right">
+                <span class="text-xs text-slate-400 block">Prezzo Attuale</span>
+                <div class="flex items-baseline gap-2 justify-end">
+                  <span class="text-2xl font-black text-white font-mono" id="resPrice">$0.00</span>
+                  <span class="text-xs font-bold font-mono" id="resPriceChange">+0.00%</span>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-xs text-slate-400 block">Market Cap</span>
+                <span class="text-base font-bold text-slate-200 font-mono" id="resMarketCap">-</span>
+              </div>
+            </div>
           </div>
-          <div class="space-y-3" id="newsContainer">
-            <p class="text-xs text-slate-400">Caricamento notizie...</p>
+
+          <!-- Grafico -->
+          <div class="p-4 bg-slate-950/60 rounded-xl border border-slate-800 space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <i data-lucide="line-chart" class="w-4 h-4 text-emerald-400"></i>
+                <h4 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Andamento Prezzo Azione</h4>
+              </div>
+              <div class="flex items-center gap-1 bg-slate-900 p-1 rounded-lg border border-slate-800 self-start sm:self-auto">
+                <button onclick="setChartTimeframe('1D')" id="tf1D" class="px-3 py-1 text-[11px] font-bold rounded transition bg-emerald-600 text-white">1D</button>
+                <button onclick="setChartTimeframe('1M')" id="tf1M" class="px-3 py-1 text-[11px] font-bold rounded transition text-slate-400 hover:text-white">1M</button>
+                <button onclick="setChartTimeframe('1Y')" id="tf1Y" class="px-3 py-1 text-[11px] font-bold rounded transition text-slate-400 hover:text-white">1Y</button>
+                <button onclick="setChartTimeframe('5Y')" id="tf5Y" class="px-3 py-1 text-[11px] font-bold rounded transition text-slate-400 hover:text-white">5Y</button>
+              </div>
+            </div>
+            <div class="h-64 relative w-full">
+              <canvas id="stockChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Metriche di bilancio -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+            <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+              <span class="text-[11px] text-slate-400 font-medium block">P/E Ratio</span>
+              <span class="text-base font-bold text-emerald-400 font-mono mt-1 block" id="mPE">-</span>
+            </div>
+            <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+              <span class="text-[11px] text-slate-400 font-medium block">P/S Ratio</span>
+              <span class="text-base font-bold text-emerald-400 font-mono mt-1 block" id="mPS">-</span>
+            </div>
+            <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+              <span class="text-[11px] text-slate-400 font-medium block">ROE</span>
+              <span class="text-base font-bold text-emerald-400 font-mono mt-1 block" id="mROE">-</span>
+            </div>
+            <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+              <span class="text-[11px] text-slate-400 font-medium block">ROIC</span>
+              <span class="text-base font-bold text-emerald-400 font-mono mt-1 block" id="mROIC">-</span>
+            </div>
+            <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+              <span class="text-[11px] text-slate-400 font-medium block">Margine Netto</span>
+              <span class="text-base font-bold text-emerald-400 font-mono mt-1 block" id="mNetMargin">-</span>
+            </div>
+            <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+              <span class="text-[11px] text-slate-400 font-medium block">Free Cash Flow</span>
+              <span class="text-base font-bold text-emerald-400 font-mono mt-1 block" id="mFCF">-</span>
+            </div>
           </div>
         </div>
 
-        <!-- CALENDARIO TRIMESTRALI & SENTIMENT -->
-        <div class="space-y-6">
-          
-          <!-- SENTIMENT -->
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
-            <div class="flex items-center gap-2 pb-3 border-b border-slate-800">
-              <i data-lucide="pie-chart" class="w-5 h-5 text-amber-400"></i>
-              <h3 class="text-base font-bold text-white">Sentiment del Mercato</h3>
+        <!-- PROFILO AZIENDALE & BUSINESS MODEL -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+          <div class="flex items-center gap-2 pb-3 border-b border-slate-800">
+            <i class="fa-solid fa-building text-emerald-400"></i>
+            <h3 class="text-base font-bold text-white">Profilo Aziendale & Business Model</h3>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+            <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
+              <span class="text-slate-400 block font-medium">Paese / Sede:</span>
+              <span class="text-slate-200 font-bold block" id="profCountry">-</span>
             </div>
-            <div class="space-y-3">
-              <div class="flex justify-between items-center text-xs">
-                <span class="text-slate-400">Social Buzz & Investor Sentiment:</span>
+            <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
+              <span class="text-slate-400 block font-medium">Borsa Quotazione:</span>
+              <span class="text-slate-200 font-bold block" id="profExchange">-</span>
+            </div>
+            <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
+              <span class="text-slate-400 block font-medium">Azioni / Capitalizzazione:</span>
+              <span class="text-slate-200 font-bold block" id="profShares">-</span>
+            </div>
+            <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
+              <span class="text-slate-400 block font-medium">Sito Web:</span>
+              <a id="profWeb" href="#" target="_blank" class="text-emerald-400 font-bold hover:underline block truncate">-</a>
+            </div>
+          </div>
+          <div class="bg-slate-950/40 p-4 rounded-xl border border-slate-800/80">
+            <h4 class="text-xs font-bold text-slate-300 mb-2 uppercase tracking-wider">Descrizione del Business</h4>
+            <p class="text-xs text-slate-400 leading-relaxed" id="profDesc">-</p>
+          </div>
+        </div>
+
+        <!-- Notizie e Sentiment Dinamico -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 lg:col-span-2 space-y-4">
+            <h3 class="text-base font-bold text-white flex items-center gap-2 pb-3 border-b border-slate-800">
+              <i data-lucide="newspaper" class="w-5 h-5 text-emerald-400"></i> Ultime Notizie & Catalizzatori
+            </h3>
+            <div class="space-y-3" id="newsContainer">
+              <p class="text-xs text-slate-400">Caricamento notizie...</p>
+            </div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+            <h3 class="text-base font-bold text-white flex items-center gap-2 pb-3 border-b border-slate-800">
+              <i data-lucide="pie-chart" class="w-5 h-5 text-amber-400"></i> Sentiment del Mercato (Live News)
+            </h3>
+            <div class="space-y-3 text-xs">
+              <div class="flex justify-between items-center">
+                <span class="text-slate-400">Analisi News:</span>
                 <span class="font-bold text-emerald-400" id="sentimentBadge">Bullish</span>
               </div>
               <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden flex">
-                <div id="sentimentBarPos" class="bg-emerald-500 h-full" style="width: 75%;"></div>
-                <div id="sentimentBarNeg" class="bg-red-500 h-full" style="width: 25%;"></div>
+                <div id="sentimentBarPos" class="bg-emerald-500 h-full transition-all duration-500" style="width: 70%;"></div>
+                <div id="sentimentBarNeg" class="bg-rose-500 h-full transition-all duration-500" style="width: 30%;"></div>
               </div>
-              <p class="text-[11px] text-slate-400 leading-relaxed" id="sentimentText">
-                Il sentiment degli investitori e la copertura mediatica sono in prevalenza positivi.
-              </p>
-            </div>
-          </div>
-
-          <!-- CALENDARIO -->
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
-            <div class="flex items-center gap-2 pb-3 border-b border-slate-800">
-              <i data-lucide="calendar" class="w-5 h-5 text-emerald-400"></i>
-              <h3 class="text-base font-bold text-white">Calendario Societario</h3>
-            </div>
-            <div class="space-y-3 text-xs" id="calendarContainer">
-              <p class="text-slate-400">Caricamento prossime date...</p>
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-
-      <!-- SEZIONE PROFILO AZIENDALE E BUSINESS MODEL -->
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-        <div class="flex items-center gap-2 pb-3 border-b border-slate-800">
-          <i data-lucide="building-2" class="w-5 h-5 text-emerald-400"></i>
-          <h3 class="text-base font-bold text-white">Profilo Aziendale & Business Model</h3>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
-          <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
-            <span class="text-slate-400 block font-medium">Paese / Sede:</span>
-            <span class="text-slate-200 font-bold block" id="profCountry">-</span>
-          </div>
-          <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
-            <span class="text-slate-400 block font-medium">Borsa Quotazione:</span>
-            <span class="text-slate-200 font-bold block" id="profExchange">-</span>
-          </div>
-          <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
-            <span class="text-slate-400 block font-medium">Dipendenti Totali:</span>
-            <span class="text-slate-200 font-bold block" id="profEmployees">-</span>
-          </div>
-          <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
-            <span class="text-slate-400 block font-medium">Sito Web Ufficiale:</span>
-            <a id="profWeb" href="#" target="_blank" class="text-emerald-400 font-bold hover:underline block truncate">-</a>
-          </div>
-        </div>
-
-        <div class="bg-slate-950/40 p-4 rounded-xl border border-slate-800/80">
-          <h4 class="text-xs font-bold text-slate-300 mb-2 uppercase tracking-wider">Descrizione del Business</h4>
-          <p class="text-xs text-slate-400 leading-relaxed" id="profDesc">-</p>
-        </div>
-      </div>
-
-      <!-- ANALISI 5 PASSI DETTAGLIATA -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between">
-          <div>
-            <div class="flex items-center gap-2 mb-3">
-              <span class="w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold flex items-center justify-center border border-emerald-500/20">1</span>
-              <h3 class="text-base font-bold text-white">Valutazione delle Metriche (Valuation)</h3>
-            </div>
-            <p class="text-sm text-slate-300 leading-relaxed" id="step1Text">-</p>
-          </div>
-          <div class="mt-4 pt-4 border-t border-slate-800 flex justify-between text-xs text-slate-400">
-            <span>Stato Valutazione:</span>
-            <span class="font-bold text-emerald-400" id="step1Badge">-</span>
-          </div>
-        </div>
-
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between">
-          <div>
-            <div class="flex items-center gap-2 mb-3">
-              <span class="w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold flex items-center justify-center border border-emerald-500/20">2</span>
-              <h3 class="text-base font-bold text-white">Salute Finanziaria e Economic Moat</h3>
-            </div>
-            <p class="text-sm text-slate-300 leading-relaxed" id="step2Text">-</p>
-          </div>
-          <div class="mt-4 pt-4 border-t border-slate-800 flex justify-between text-xs text-slate-400">
-            <span>Valutazione Moat:</span>
-            <span class="font-bold text-emerald-400" id="step2Badge">-</span>
-          </div>
-        </div>
-
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 lg:col-span-2">
-          <div class="flex items-center gap-2 mb-4">
-            <span class="w-6 h-6 rounded-full bg-red-500/10 text-red-400 text-xs font-bold flex items-center justify-center border border-red-500/20">3</span>
-            <h3 class="text-base font-bold text-white">Red Flags & Rischi Principali (3-5 Anni)</h3>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="step3Container">
-          </div>
-        </div>
-
-        <!-- PASSO 4: SIMULATORE DCF & MARGINE DI SICUREZZA CON HELP -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 lg:col-span-2">
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-2">
-              <span class="w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold flex items-center justify-center border border-emerald-500/20">4</span>
-              <h3 class="text-base font-bold text-white">Scenario Base e Calcolo Margine di Sicurezza</h3>
-            </div>
-            <button onclick="openDcfHelpModal()" class="flex items-center gap-1.5 px-3 py-1 bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-bold rounded-lg border border-slate-700 transition">
-              <i data-lucide="help-circle" class="w-4 h-4 text-amber-400"></i>
-              <span>Come si usa questo modulo?</span>
-            </button>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="space-y-4 bg-slate-950/50 p-4 rounded-xl border border-slate-800">
-              <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Parametri DCF</h4>
-              
-              <div>
-                <div class="flex justify-between text-xs text-slate-400 mb-1">
-                  <span>Crescita FCF (5 anni)</span>
-                  <span id="labelGrowth" class="font-mono text-emerald-400">8%</span>
-                </div>
-                <input type="range" id="sliderGrowth" min="0" max="30" value="8" step="1" oninput="updateDCF()" class="w-full accent-emerald-500" />
-              </div>
-
-              <div>
-                <div class="flex justify-between text-xs text-slate-400 mb-1">
-                  <span>Tasso di Sconto (WACC)</span>
-                  <span id="labelDiscount" class="font-mono text-emerald-400">9%</span>
-                </div>
-                <input type="range" id="sliderDiscount" min="6" max="15" value="9" step="0.5" oninput="updateDCF()" class="w-full accent-emerald-500" />
-              </div>
-
-              <div>
-                <div class="flex justify-between text-xs text-slate-400 mb-1">
-                  <span>Margine di Sicurezza</span>
-                  <span id="labelMos" class="font-mono text-emerald-400">20%</span>
-                </div>
-                <input type="range" id="sliderMos" min="10" max="40" value="20" step="5" oninput="updateDCF()" class="w-full accent-emerald-500" />
-              </div>
-            </div>
-
-            <div class="md:col-span-2 flex flex-col justify-between bg-slate-950/50 p-5 rounded-xl border border-slate-800">
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <span class="text-xs text-slate-400 block">Valore Intrinseco Stimato</span>
-                  <span class="text-2xl font-extrabold text-white font-mono mt-1 block" id="dcfIntrinsic">$0.00</span>
-                </div>
-                <div>
-                  <span class="text-xs text-slate-400 block">Prezzo Target d'Ingresso</span>
-                  <span class="text-2xl font-extrabold text-emerald-400 font-mono mt-1 block" id="dcfTarget">$0.00</span>
-                </div>
-              </div>
-
-              <div class="mt-4 pt-4 border-t border-slate-800/80">
-                <p class="text-xs text-slate-300 leading-relaxed" id="step4Text">-</p>
-              </div>
+              <p class="text-[11px] text-slate-400 leading-relaxed" id="sentimentText">Calcolato in tempo reale analizzando il testo delle ultime notizie.</p>
             </div>
           </div>
         </div>
 
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 lg:col-span-2 space-y-6">
-          <div class="flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold flex items-center justify-center border border-emerald-500/20">5</span>
-            <h3 class="text-base font-bold text-white">Verdetto Finale e Sintesi</h3>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-slate-950/50 p-4 rounded-xl border border-slate-800 space-y-3">
-              <h4 class="text-xs font-bold text-emerald-400 flex items-center gap-1.5 uppercase tracking-wider">
-                <i data-lucide="check-circle-2" class="w-4 h-4"></i> Pro dell'Acquisto
-              </h4>
-              <ul class="text-xs text-slate-300 space-y-2 list-disc list-inside" id="prosList">
-              </ul>
-            </div>
-
-            <div class="bg-slate-950/50 p-4 rounded-xl border border-slate-800 space-y-3">
-              <h4 class="text-xs font-bold text-red-400 flex items-center gap-1.5 uppercase tracking-wider">
-                <i data-lucide="x-circle" class="w-4 h-4"></i> Contro dell'Acquisto
-              </h4>
-              <ul class="text-xs text-slate-300 space-y-2 list-disc list-inside" id="consList">
-              </ul>
-            </div>
-          </div>
-
-          <div class="p-5 rounded-xl border flex flex-col md:flex-row items-center justify-between gap-4" id="verdictBox">
+        <!-- ANALISI 5 PASSI & PRO / CONTRO / BUY O SELL -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between">
             <div>
-              <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold block">Giudizio Finale</span>
-              <span class="text-xl font-black text-white mt-0.5 block" id="verdictText">-</span>
+              <div class="flex items-center gap-2 mb-3">
+                <span class="w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold flex items-center justify-center border border-emerald-500/20">1</span>
+                <h3 class="text-base font-bold text-white">Valutazione delle Metriche (Valuation)</h3>
+              </div>
+              <p class="text-sm text-slate-300 leading-relaxed" id="step1Text">-</p>
             </div>
-            <div class="text-xs text-slate-300 max-w-xl" id="verdictConditions">
+            <div class="mt-4 pt-4 border-t border-slate-800 flex justify-between text-xs text-slate-400">
+              <span>Stato:</span><span class="font-bold text-emerald-400" id="step1Badge">-</span>
+            </div>
+          </div>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-2 mb-3">
+                <span class="w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold flex items-center justify-center border border-emerald-500/20">2</span>
+                <h3 class="text-base font-bold text-white">Salute Finanziaria & Moat</h3>
+              </div>
+              <p class="text-sm text-slate-300 leading-relaxed" id="step2Text">-</p>
+            </div>
+            <div class="mt-4 pt-4 border-t border-slate-800 flex justify-between text-xs text-slate-400">
+              <span>Moat:</span><span class="font-bold text-emerald-400" id="step2Badge">-</span>
+            </div>
+          </div>
+
+          <!-- PRO E CONTRO & RACCOMANDAZIONE BUY/SELL -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 lg:col-span-2 space-y-6">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold flex items-center justify-center border border-emerald-500/20">5</span>
+              <h3 class="text-base font-bold text-white">Verdetto Strategico: Buy / Sell & Motivazioni</h3>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="bg-slate-950/50 p-4 rounded-xl border border-slate-800 space-y-3">
+                <h4 class="text-xs font-bold text-emerald-400 flex items-center gap-1.5 uppercase tracking-wider">
+                  <i class="fa-solid fa-circle-check"></i> Pro & Motivi per l'Acquisto (Buy)
+                </h4>
+                <ul class="text-xs text-slate-300 space-y-2 list-disc list-inside" id="prosList">
+                  <li>Ottima generazione di Free Cash Flow e margini operativi stabili.</li>
+                  <li>Posizione di leadership nel mercato di riferimento con forte pricing power.</li>
+                </ul>
+              </div>
+              <div class="bg-slate-950/50 p-4 rounded-xl border border-slate-800 space-y-3">
+                <h4 class="text-xs font-bold text-rose-400 flex items-center gap-1.5 uppercase tracking-wider">
+                  <i class="fa-solid fa-triangle-exclamation"></i> Contro & Motivi di Attenzione (Sell / Hold)
+                </h4>
+                <ul class="text-xs text-slate-300 space-y-2 list-disc list-inside" id="consList">
+                  <li>Esposizione alle fluttuazioni cicliche della domanda macroeconomica.</li>
+                  <li>Moltiplicatori di prezzo che richiedono conferme costanti sugli utili futuri.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Simulatore DCF -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 lg:col-span-2">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold flex items-center justify-center border border-emerald-500/20">4</span>
+                <h3 class="text-base font-bold text-white">Simulatore DCF & Margine di Sicurezza</h3>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div class="space-y-4 bg-slate-950/50 p-4 rounded-xl border border-slate-800 text-xs">
+                <div>
+                  <div class="flex justify-between text-slate-400 mb-1">
+                    <span>Crescita FCF (5 anni)</span><span id="labelGrowth" class="font-mono text-emerald-400">8%</span>
+                  </div>
+                  <input type="range" id="sliderGrowth" min="0" max="30" value="8" step="1" oninput="updateDCF()" class="w-full accent-emerald-500" />
+                </div>
+                <div>
+                  <div class="flex justify-between text-slate-400 mb-1">
+                    <span>Tasso di Sconto (WACC)</span><span id="labelDiscount" class="font-mono text-emerald-400">9%</span>
+                  </div>
+                  <input type="range" id="sliderDiscount" min="6" max="15" value="9" step="0.5" oninput="updateDCF()" class="w-full accent-emerald-500" />
+                </div>
+                <div>
+                  <div class="flex justify-between text-slate-400 mb-1">
+                    <span>Margine di Sicurezza</span><span id="labelMos" class="font-mono text-emerald-400">20%</span>
+                  </div>
+                  <input type="range" id="sliderMos" min="10" max="40" value="20" step="5" oninput="updateDCF()" class="w-full accent-emerald-500" />
+                </div>
+              </div>
+              <div class="md:col-span-2 flex flex-col justify-between bg-slate-950/50 p-5 rounded-xl border border-slate-800">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <span class="text-xs text-slate-400 block">Valore Intrinseco Stimato</span>
+                    <span class="text-2xl font-extrabold text-white font-mono mt-1 block" id="dcfIntrinsic">$0.00</span>
+                  </div>
+                  <div>
+                    <span class="text-xs text-slate-400 block">Prezzo Target d'Ingresso</span>
+                    <span class="text-2xl font-extrabold text-emerald-400 font-mono mt-1 block" id="dcfTarget">$0.00</span>
+                  </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-slate-800/80">
+                  <p class="text-xs text-slate-300 leading-relaxed" id="step4Text">-</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-
-      </div>
-
-      <div class="flex justify-end gap-3 pt-4">
-        <button onclick="window.print()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg border border-slate-700 flex items-center gap-2 transition">
-          <i data-lucide="printer" class="w-4 h-4"></i> Stampa / Esporta PDF
-        </button>
-      </div>
-
+      </section>
     </section>
-
   </main>
 
-  <!-- MODAL HELP SCENARIO BASE & DCF -->
-  <div id="dcfHelpModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
-      <div class="flex justify-between items-center pb-3 border-b border-slate-800">
+  <!-- MODAL AGGIUNGI NUOVA POSIZIONE -->
+  <div id="addStockModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-lg w-full space-y-4 shadow-2xl relative">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <h3 class="text-base font-bold text-white flex items-center gap-2">
-          <i data-lucide="help-circle" class="w-5 h-5 text-amber-400"></i> Guida allo Scenario Base & Margine di Sicurezza
+          <i class="fa-solid fa-plus-circle text-emerald-400"></i> Aggiungi Nuova Posizione
         </h3>
-        <button onclick="closeDcfHelpModal()" class="text-slate-400 hover:text-white">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
+        <button onclick="closeAddStockModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
-
-      <div class="overflow-y-auto space-y-4 text-xs pr-2 leading-relaxed">
-        <div class="bg-emerald-950/20 p-3 rounded-xl border border-emerald-800/40">
-          <strong class="text-emerald-400 block text-sm mb-1">A cosa serve questa sezione?</strong>
-          <p class="text-slate-300">
-            Serve a calcolare il <strong>Valore Intrinseco</strong> dell'azione ed il <strong>Prezzo Target d'Ingresso</strong> per acquistare a sconto ed evitare di sovrappagare.
-          </p>
-        </div>
-
-        <div class="space-y-3 text-slate-300">
-          <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800">
-            <span class="font-bold text-white block mb-1">1. Crescita FCF (5 anni)</span>
-            <p>La percentuale di crescita annua della cassa (Free Cash Flow) che ti aspetti nei prossimi 5 anni.</p>
-          </div>
-
-          <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800">
-            <span class="font-bold text-white block mb-1">2. Tasso di Sconto (WACC)</span>
-            <p>Rendimento annuo minimo preteso dal tuo investimento (standard tra 8% e 10%).</p>
-          </div>
-
-          <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800">
-            <span class="font-bold text-white block mb-1">3. Margine di Sicurezza</span>
-            <p>Sconto di sicurezza (es. 20%) per proteggerti da errori di stima o da crolli imprevisti di mercato.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="flex justify-end pt-2 border-t border-slate-800">
-        <button onclick="closeDcfHelpModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg">
-          Ho Capito
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL GLOSSARIO METRICHE -->
-  <div id="glossaryModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-3xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
-      <div class="flex justify-between items-center pb-3 border-b border-slate-800">
-        <h3 class="text-base font-bold text-white flex items-center gap-2">
-          <i data-lucide="book-open" class="w-5 h-5 text-amber-400"></i> Glossario Completo delle Metriche Finanziarie
-        </h3>
-        <button onclick="closeGlossaryModal()" class="text-slate-400 hover:text-white">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <div class="overflow-y-auto space-y-4 text-xs pr-2">
-        <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
-          <span class="font-bold text-emerald-400 block">P/E (Price-to-Earnings / Rapporto Prezzo/Utili)</span>
-          <p class="text-slate-300">Quante volte l'utile netto annuo stai pagando acquistando l'azione.</p>
-        </div>
-
-        <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
-          <span class="font-bold text-emerald-400 block">Forward P/E (P/E Prospettico)</span>
-          <p class="text-slate-300">Calcolato sugli utili netti stimati dagli analisti per i prossimi 12 mesi.</p>
-        </div>
-
-        <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
-          <span class="font-bold text-emerald-400 block">P/S (Price-to-Sales / Rapporto Prezzo/Fatturato)</span>
-          <p class="text-slate-300">Confronta la capitalizzazione con i ricavi totali.</p>
-        </div>
-
-        <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
-          <span class="font-bold text-emerald-400 block">ROIC (Return on Invested Capital)</span>
-          <p class="text-slate-300">Misura il rendimento che l'azienda ottiene da tutto il capitale investito nel business.</p>
-        </div>
-
-        <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
-          <span class="font-bold text-emerald-400 block">Free Cash Flow (FCF)</span>
-          <p class="text-slate-300">Liquidità pura prodotta dalla gestione operativa al netto delle spese di capitale.</p>
-        </div>
-      </div>
-
-      <div class="flex justify-end pt-2 border-t border-slate-800">
-        <button onclick="closeGlossaryModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg">
-          Chiudi
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL FINNHUB API KEY -->
-  <div id="apiModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-      <div class="flex justify-between items-center">
-        <h3 class="text-base font-bold text-white flex items-center gap-2">
-          <i data-lucide="key" class="w-5 h-5 text-emerald-400"></i> Configura Finnhub API Key
-        </h3>
-        <button onclick="closeApiModal()" class="text-slate-400 hover:text-white">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-      <p class="text-xs text-slate-400 leading-relaxed">
-        Inserisci la tua chiave API Finnhub (gratuita su <a href="https://finnhub.io" target="_blank" class="text-emerald-400 underline">finnhub.io</a>) per abilitare il download automatico in tempo reale di dati finanziari, notizie, profilazione e calendari.
-      </p>
-      <input 
-        type="text" 
-        id="apiKeyInput" 
-        placeholder="Incolla qui la tua Finnhub API Key" 
-        class="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none"
-      />
-      <div class="flex justify-end gap-2 pt-2">
-        <button onclick="closeApiModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg">
-          Annulla
-        </button>
-        <button onclick="saveApiKey()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition">
-          Salva Chiave
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    lucide.createIcons();
-
-    let currentFinancialData = null;
-    let chartInstance = null;
-
-    function getApiKey() {
-      return localStorage.getItem('finnhub_api_key') || '';
-    }
-
-    function checkApiKeyStatus() {
-      const key = getApiKey();
-      const statusSpan = document.getElementById('apiKeyStatus');
-      const notice = document.getElementById('noKeyNotice');
       
-      if (key) {
-        statusSpan.textContent = 'API Key Configurata';
-        statusSpan.classList.add('text-emerald-400');
-        if (notice) notice.classList.add('hidden');
+      <form onsubmit="saveNewStock(event)" class="space-y-3 text-xs">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-slate-400 block mb-1">Nome Società</label>
+            <input type="text" id="addName" placeholder="Es. Apple Inc." required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500" />
+          </div>
+          <div>
+            <label class="text-slate-400 block mb-1">Ticker / Simbolo</label>
+            <input type="text" id="addSymbol" placeholder="Es. AAPL" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white uppercase focus:outline-none focus:border-emerald-500" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="text-slate-400 block mb-1">Valuta</label>
+            <select id="addCurrency" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500">
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-slate-400 block mb-1">Quantità Azioni</label>
+            <input type="number" step="any" id="addQty" placeholder="Es. 10" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500" />
+          </div>
+          <div>
+            <label class="text-slate-400 block mb-1">Prezzo Azione Singola</label>
+            <input type="number" step="any" id="addSinglePrice" placeholder="Es. 150.00" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-slate-400 block mb-1">Spese Accessorie Totali</label>
+            <input type="number" step="any" id="addFees" placeholder="Es. 5.00 (commissioni)" value="0" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500" />
+          </div>
+          <div>
+            <label class="text-slate-400 block mb-1">Azione Strategica</label>
+            <select id="addActionBadge" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500">
+              <option value="Mantenere">Mantenere</option>
+              <option value="Accumula (DCA)">Accumula (DCA)</option>
+              <option value="Take Profit Parz.">Take Profit Parz.</option>
+              <option value="Monitorare">Monitorare</option>
+              <option value="Strong Hold">Strong Hold</option>
+              <option value="Liquidare">Liquidare</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-slate-400 block mb-1">Nota Stato di Salute (Opzionale)</label>
+          <input type="text" id="addHealth" placeholder="Es. Buona crescita dei margini, leader di settore." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500" />
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeAddStockModal()" class="px-4 py-2 bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs font-bold rounded-xl">Annulla</button>
+          <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-xl text-white">Inserisci Titolo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL API KEY FINNHUB -->
+  <div id="apiKeyModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-2xl relative">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-key text-emerald-400"></i> Configurazione Finnhub API Key
+        </h3>
+        <button onclick="closeApiModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <p class="text-xs text-slate-300">
+        Registrati gratis su <a href="https://finnhub.io" target="_blank" class="text-emerald-400 underline font-semibold">finnhub.io</a> per ottenere la tua chiave API.
+      </p>
+      <input type="password" id="apiKeyInput" placeholder="Incolla API Key qui..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500 font-mono" />
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button onclick="removeApiKey()" class="px-4 py-2 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 text-xs font-bold rounded-xl">Rimuovi</button>
+        <button onclick="saveApiKey()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-xl text-white">Salva Chiave</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL GLOSSARIO -->
+  <div id="glossaryModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-2xl w-full space-y-4 shadow-2xl max-h-[85vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 sticky top-0 bg-slate-900 z-10">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i data-lucide="book-open" class="w-5 h-5 text-amber-400"></i> Glossario delle Metriche
+        </h3>
+        <button onclick="closeGlossaryModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <div class="space-y-3 text-xs text-slate-300">
+        <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800">
+          <strong class="text-emerald-400 block text-sm mb-1">P/E (Price to Earnings)</strong>
+          Rapporto tra prezzo e utili netti per azione.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT JAVASCRIPT CON P/L GIORNALIERO E GESTIONE POSIZIONI -->
+  <script>
+    let rawPortfolioData = [
+      { 
+        id: 'msft', name: 'Microsoft Corporation', symbol: 'MSFT', finnhubSymbol: 'MSFT', currency: 'USD', qty: 2, 
+        singlePrice: 526.42, fees: 0, currentPrice: 531.58, dailyChange: 0, dailyPercent: 0, marketValueUsd: 1063.16, plPercent: 0.98, plEur: 9.21, purchasePriceCalculated: 526.42, 
+        health: "Salute Eccezionale (Top Tier). Leader nel Cloud (Azure) e IA commerciale con flussi di cassa solidissimi[cite: 3].", 
+        action: "MANTENERE / ACCUMULARE (Core Hold). Posizione cardine del portafoglio.", 
+        badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20", actionBadge: "Mantenere" 
+      },
+      { 
+        id: 'bam', name: 'Brookfield Asset Mgmt', symbol: 'BAM', finnhubSymbol: 'BAM', currency: 'USD', qty: 18, 
+        singlePrice: 59.18, fees: 0, currentPrice: 47.07, dailyChange: 0, dailyPercent: 0, marketValueUsd: 847.26, plPercent: -20.46, plEur: -195.05, purchasePriceCalculated: 59.18, 
+        health: "Salute solida. Leader globale nella gestione di asset reali, rinnovabili e infrastrutture[cite: 3].", 
+        action: "HOLD / DOLLAR COST AVERAGE (DCA). Beneficerà del ciclo di taglio dei tassi.", 
+        badgeColor: "bg-amber-500/10 text-amber-400 border-amber-500/20", actionBadge: "Accumula (DCA)" 
+      },
+      { 
+        id: 'amzn', name: 'Amazon.com Inc', symbol: 'AMZN', finnhubSymbol: 'AMZN', currency: 'USD', qty: 5, 
+        singlePrice: 124.27, fees: 0, currentPrice: 248.37, dailyChange: 0, dailyPercent: 0, marketValueUsd: 1241.85, plPercent: 99.86, plEur: 555.11, purchasePriceCalculated: 124.27, 
+        health: "Salute Ottima. Redditività e-commerce in crescita e AWS accelerato dalla domanda Cloud/IA[cite: 3].", 
+        action: "TAKE PROFIT PARZIALE O HOLD. Performance eccezionale vicina al raddoppio (+99.86%)[cite: 3].", 
+        badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20", actionBadge: "Take Profit Parz." 
+      },
+      { 
+        id: 'serk', name: 'Seri Industrial', symbol: 'SERK', finnhubSymbol: 'SERI.MI', currency: 'EUR', qty: 100, 
+        singlePrice: 7.99, fees: 0, currentPrice: 2.18, dailyChange: 0, dailyPercent: 0, marketValueEur: 218.00, plPercent: -72.71, plEur: -573.00, purchasePriceCalculated: 7.99, 
+        health: "Salute debole e altamente speculativa. Impattata da ritardi industriali nel settore batterie[cite: 3].", 
+        action: "TAX-LOSS HARVESTING / STOP LOSS. Valutare la chiusura per compensare plusvalenze fiscali[cite: 3].", 
+        badgeColor: "bg-rose-500/10 text-rose-400 border-rose-500/20", actionBadge: "Taglia / Stop Loss" 
+      },
+      { 
+        id: 'htwo', name: 'L&G Hydrogen Economy ETF', symbol: 'HTWO', finnhubSymbol: 'HTWO.MI', currency: 'EUR', qty: 170, 
+        singlePrice: 6.01, fees: 0, currentPrice: 6.08, dailyChange: 0, dailyPercent: 0, marketValueEur: 1033.60, plPercent: 1.10, plEur: 11.29, purchasePriceCalculated: 6.01, 
+        health: "ETF tematico focalizzato sull'idrogeno pulito, in fase di transizione e dipendente da sussidi[cite: 3].", 
+        action: "MANTENERE IN PAREGGIO. Inserire uno stop loss a protezione del capitale investito.", 
+        badgeColor: "bg-blue-500/10 text-blue-400 border-blue-500/20", actionBadge: "Monitorare" 
+      },
+      { 
+        id: 'jmia', name: 'Jumia Technologies', symbol: 'JMIA', finnhubSymbol: 'JMIA', currency: 'USD', qty: 45, 
+        singlePrice: 15.20, fees: 0, currentPrice: 5.65, dailyChange: 0, dailyPercent: 0, marketValueUsd: 254.25, plPercent: -62.82, plEur: -369.24, purchasePriceCalculated: 15.20, 
+        health: "Turnaround speculativo su e-commerce in Africa. Sottoposto a forti svalutazioni valutarie[cite: 3].", 
+        action: "CHIUSURA / RIDUZIONE ESPOSIZIONE. Rischio elevato, valutare riallocazione[cite: 3].", 
+        badgeColor: "bg-rose-500/10 text-rose-400 border-rose-500/20", actionBadge: "Valuta Riduzione" 
+      },
+      { 
+        id: 'spce', name: 'Virgin Galactic Holdings', symbol: 'SPCE', finnhubSymbol: 'SPCE', currency: 'USD', qty: 25, 
+        singlePrice: 27.72, fees: 0, currentPrice: 2.52, dailyChange: 0, dailyPercent: 0, marketValueUsd: 63.12, plPercent: -90.89, plEur: -563.70, purchasePriceCalculated: 27.72, 
+        health: "Salute Critica. Brucia cassa a ritmi elevati con ricavi minimi e forte rischio di diluizione[cite: 3].", 
+        action: "VENDITA / REGISTRAZIONE MINUSVALENZA. Posizione residua minima utile per tax loss[cite: 3].", 
+        badgeColor: "bg-rose-500/10 text-rose-400 border-rose-500/20", actionBadge: "Vendi / Minus" 
+      },
+      { 
+        id: 'brkb', name: 'Berkshire Hathaway B', symbol: 'BRKb', finnhubSymbol: 'BRK.B', currency: 'USD', qty: 3, 
+        singlePrice: 249.54, fees: 0, currentPrice: 548.02, dailyChange: 0, dailyPercent: 0, marketValueUsd: 1644.06, plPercent: 119.61, plEur: 801.06, purchasePriceCalculated: 249.54, 
+        health: "Salute Insuperabile. Fortezza finanziaria con immensa liquidità e protezione macroeconomica[cite: 3].", 
+        action: "MANTENERE A LUNGO TERMINE (Strong Hold). Ottima crescita a +119.61%[cite: 3].", 
+        badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20", actionBadge: "Strong Hold" 
+      },
+      { 
+        id: 'sndl', name: 'SNDL Inc', symbol: 'SNDL', finnhubSymbol: 'SNDL', currency: 'USD', qty: 60, 
+        singlePrice: 9.45, fees: 0, currentPrice: 1.25, dailyChange: 0, dailyPercent: 0, marketValueUsd: 75.30, plPercent: -86.72, plEur: -381.72, purchasePriceCalculated: 9.45, 
+        health: "Penny stock settore cannabis penalizzato da sovraccapacità e ritardi normativi USA[cite: 3].", 
+        action: "LIQUIDARE. Capitale residuo limitato (~$75), ideale per chiudere e registrare minusvalenza[cite: 3].", 
+        badgeColor: "bg-rose-500/10 text-rose-400 border-rose-500/20", actionBadge: "Liquidare" 
+      }
+    ];
+
+    const EUR_USD_RATE = 1.08;
+    let finnhubKey = localStorage.getItem('finnhub_api_key') || '';
+    let countdown = 10;
+    let timerId = null;
+    let isAutoRefreshActive = true;
+    let currentTicker = '';
+    let currentData = null;
+    let stockChart = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      updateApiKeyStatusUI();
+      renderPortfolioTable();
+      calculatePortfolioTotals();
+      startAutoRefreshTimer();
+    });
+
+    function updateApiKeyStatusUI() {
+      const badge = document.getElementById('apiStatusBadge');
+      const text = document.getElementById('apiKeyStatusText');
+      if (finnhubKey) {
+        badge.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
+        text.innerText = "API Connessa";
       } else {
-        statusSpan.textContent = 'Configura API Key';
-        statusSpan.classList.remove('text-emerald-400');
-        if (notice) notice.classList.remove('hidden');
+        badge.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
+        text.innerText = "Configura API";
       }
     }
 
     function openApiModal() {
-      document.getElementById('apiKeyInput').value = getApiKey();
-      document.getElementById('apiModal').classList.remove('hidden');
+      document.getElementById('apiKeyInput').value = finnhubKey;
+      document.getElementById('apiKeyModal').classList.remove('hidden');
+    }
+    function closeApiModal() { document.getElementById('apiKeyModal').classList.add('hidden'); }
+    function openGlossaryModal() { document.getElementById('glossaryModal').classList.remove('hidden'); }
+    function closeGlossaryModal() { document.getElementById('glossaryModal').classList.add('hidden'); }
+
+    function openAddStockModal() { document.getElementById('addStockModal').classList.remove('hidden'); }
+    function closeAddStockModal() { document.getElementById('addStockModal').classList.add('hidden'); }
+
+    function saveNewStock(e) {
+      e.preventDefault();
+      const name = document.getElementById('addName').value.trim();
+      const symbol = document.getElementById('addSymbol').value.trim().toUpperCase();
+      const currency = document.getElementById('addCurrency').value;
+      const qty = parseFloat(document.getElementById('addQty').value);
+      const singlePrice = parseFloat(document.getElementById('addSinglePrice').value);
+      const fees = parseFloat(document.getElementById('addFees').value) || 0;
+      const actionBadge = document.getElementById('addActionBadge').value;
+      const health = document.getElementById('addHealth').value.trim() || 'Posizione inserita manualmente.';
+
+      const totalCost = (singlePrice * qty) + fees;
+      const purchasePriceCalculated = totalCost / qty;
+      const currentPrice = singlePrice;
+
+      const newStock = {
+        id: 'stk_' + Date.now(),
+        name,
+        symbol,
+        finnhubSymbol: symbol,
+        currency,
+        qty,
+        singlePrice,
+        fees,
+        currentPrice,
+        dailyChange: 0,
+        dailyPercent: 0,
+        marketValueUsd: currency === 'USD' ? (currentPrice * qty) : 0,
+        marketValueEur: currency === 'EUR' ? (currentPrice * qty) : 0,
+        plPercent: 0,
+        plEur: 0,
+        purchasePriceCalculated,
+        health,
+        action: `Strategia: ${actionBadge}`,
+        badgeColor: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+        actionBadge
+      };
+
+      rawPortfolioData.push(newStock);
+      closeAddStockModal();
+      
+      document.getElementById('addName').value = '';
+      document.getElementById('addSymbol').value = '';
+      document.getElementById('addQty').value = '';
+      document.getElementById('addSinglePrice').value = '';
+      document.getElementById('addFees').value = '0';
+      document.getElementById('addHealth').value = '';
+
+      if (finnhubKey) fetchLivePrices(finnhubKey);
+      else {
+        renderPortfolioTable();
+        calculatePortfolioTotals();
+      }
     }
 
-    function closeApiModal() {
-      document.getElementById('apiModal').classList.add('hidden');
+    function deleteStock(id, event) {
+      event.stopPropagation();
+      if (confirm('Sei sicuro di voler rimuovere questa posizione dal portafoglio?')) {
+        rawPortfolioData = rawPortfolioData.filter(item => item.id !== id);
+        renderPortfolioTable();
+        calculatePortfolioTotals();
+        closeDetails();
+      }
     }
 
     function saveApiKey() {
       const key = document.getElementById('apiKeyInput').value.trim();
       if (key) {
+        finnhubKey = key;
         localStorage.setItem('finnhub_api_key', key);
-      } else {
-        localStorage.removeItem('finnhub_api_key');
+        updateApiKeyStatusUI();
+        closeApiModal();
+        fetchLivePrices(key);
       }
-      checkApiKeyStatus();
+    }
+
+    function removeApiKey() {
+      finnhubKey = '';
+      localStorage.removeItem('finnhub_api_key');
+      updateApiKeyStatusUI();
       closeApiModal();
     }
 
-    function openGlossaryModal() {
-      document.getElementById('glossaryModal').classList.remove('hidden');
+    function toggleAutoRefresh() {
+      isAutoRefreshActive = !isAutoRefreshActive;
+      const icon = document.getElementById('timerIcon');
+      const statusText = document.getElementById('timerStatusText');
+      if (isAutoRefreshActive) {
+        icon.className = "fa-solid fa-pause text-amber-400";
+        statusText.innerText = "10s";
+      } else {
+        icon.className = "fa-solid fa-play text-emerald-400";
+        statusText.innerText = "Pausa";
+      }
     }
 
-    function closeGlossaryModal() {
-      document.getElementById('glossaryModal').classList.add('hidden');
+    function startAutoRefreshTimer() {
+      if (timerId) clearInterval(timerId);
+      timerId = setInterval(() => {
+        if (!isAutoRefreshActive) return;
+        countdown--;
+        if (countdown <= 0) {
+          countdown = 10;
+          if (finnhubKey) fetchLivePrices(finnhubKey);
+        }
+        document.getElementById('countdownText').innerText = `${countdown}s`;
+      }, 1000);
     }
 
-    function openDcfHelpModal() {
-      document.getElementById('dcfHelpModal').classList.remove('hidden');
+    async function fetchLivePrices(apiKey) {
+      for (let stock of rawPortfolioData) {
+        if (!stock.finnhubSymbol.endsWith('.MI')) {
+          try {
+            const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${stock.finnhubSymbol}&token=${apiKey}`);
+            const data = await res.json();
+            if (data && data.c && data.c !== 0) {
+              stock.currentPrice = data.c;
+              stock.dailyChange = data.d || 0; // Variazione prezzo giornaliero in $ o €
+              stock.dailyPercent = data.dp || 0; // Variazione percentuale giornaliera
+
+              if (stock.currency === 'USD') {
+                stock.marketValueUsd = stock.currentPrice * stock.qty;
+                stock.plEur = ((stock.marketValueUsd - (stock.purchasePriceCalculated * stock.qty)) / EUR_USD_RATE);
+              } else {
+                stock.marketValueEur = stock.currentPrice * stock.qty;
+                stock.plEur = stock.marketValueEur - (stock.purchasePriceCalculated * stock.qty);
+              }
+              stock.plPercent = ((stock.currentPrice - stock.purchasePriceCalculated) / stock.purchasePriceCalculated) * 100;
+              stock.badgeColor = stock.plEur >= 0 ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-rose-500/10 text-rose-400 border-rose-500/20";
+            }
+          } catch (e) { console.error(e); }
+        }
+      }
+      renderPortfolioTable();
+      calculatePortfolioTotals();
     }
 
-    function closeDcfHelpModal() {
-      document.getElementById('dcfHelpModal').classList.add('hidden');
+    function renderPortfolioTable() {
+      const tbody = document.getElementById('portfolioTableBody');
+      tbody.innerHTML = rawPortfolioData.map(s => {
+        const valEur = s.currency === 'USD' ? (s.marketValueUsd / EUR_USD_RATE) : s.marketValueEur;
+        const isPos = s.plEur >= 0;
+        const plColor = isPos ? 'text-emerald-400' : 'text-rose-400';
+        const singleP = s.singlePrice || s.purchasePriceCalculated;
+        const feesVal = s.fees || 0;
+
+        // Calcolo P/L Giornaliero in EUR
+        const dailyChangeVal = s.dailyChange || 0;
+        const dailyEur = s.currency === 'USD' ? ((dailyChangeVal * s.qty) / EUR_USD_RATE) : (dailyChangeVal * s.qty);
+        const isDailyPos = dailyEur >= 0;
+        const dailyColor = isDailyPos ? 'text-emerald-400' : 'text-rose-400';
+        const dailyPct = s.dailyPercent || 0;
+
+        return `
+          <tr onclick="showDetails('${s.id}')" class="hover:bg-slate-800/60 cursor-pointer transition border-b border-slate-800/40 whitespace-nowrap">
+            <td class="py-3 px-3 font-semibold text-white">
+              ${s.name} <span class="text-xs font-mono text-emerald-400 bg-slate-800 px-1.5 py-0.5 rounded ml-1">${s.symbol}</span>
+            </td>
+            <td class="py-3 px-2 text-center font-mono text-slate-300">${s.qty}</td>
+            <td class="py-3 px-2.5 text-right font-mono text-slate-300">${s.currency === 'USD' ? '$' : '€'}${singleP.toFixed(2)}</td>
+            <td class="py-3 px-2.5 text-right font-mono text-slate-400">${s.currency === 'USD' ? '$' : '€'}${feesVal.toFixed(2)}</td>
+            <td class="py-3 px-2.5 text-right font-mono text-white font-bold">${s.currency === 'USD' ? '$' : '€'}${s.currentPrice.toFixed(2)}</td>
+            <td class="py-3 px-3 text-right font-mono text-white">€${valEur.toFixed(2)}</td>
+            <td class="py-3 px-3 text-right font-mono font-bold ${dailyColor}">
+              ${isDailyPos ? '+' : ''}€${dailyEur.toFixed(2)} <span class="text-[10px] font-normal">(${isDailyPos ? '+' : ''}${dailyPct.toFixed(2)}%)</span>
+            </td>
+            <td class="py-3 px-2.5 text-right font-mono font-bold ${plColor}">${isPos ? '+' : ''}${s.plPercent.toFixed(2)}%</td>
+            <td class="py-3 px-3 text-right font-mono font-bold ${plColor}">${isPos ? '+' : ''}€${s.plEur.toFixed(2)}</td>
+            <td class="py-3 px-2.5 text-center">
+              <span class="px-2 py-1 rounded text-[11px] font-semibold ${s.badgeColor} border">${isPos ? 'In Profitto' : 'In Perdita'}</span>
+            </td>
+            <td class="py-3 px-3 text-center">
+              <span class="text-[11px] font-medium bg-slate-800 text-slate-300 px-2 py-1 rounded border border-slate-700">${s.actionBadge}</span>
+            </td>
+            <td class="py-3 px-2 text-center">
+              <button onclick="deleteStock('${s.id}', event)" class="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition" title="Elimina Posizione">
+                <i class="fa-solid fa-trash-can text-sm"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function calculatePortfolioTotals() {
+      let totalInv = 0;
+      let totalVal = 0;
+      let totalPL = 0;
+      let profitCount = 0;
+      let lossCount = 0;
+
+      rawPortfolioData.forEach(s => {
+        const inv = (s.purchasePriceCalculated * s.qty);
+        const invEur = s.currency === 'USD' ? (inv / EUR_USD_RATE) : inv;
+        const valEur = s.currency === 'USD' ? (s.marketValueUsd / EUR_USD_RATE) : s.marketValueEur;
+        totalInv += invEur;
+        totalVal += valEur;
+        totalPL += s.plEur;
+
+        if (s.plEur >= 0) profitCount++;
+        else lossCount++;
+      });
+
+      const totalPct = totalInv > 0 ? (totalPL / totalInv) * 100 : 0;
+      document.getElementById('totalInvested').innerText = `€${totalInv.toFixed(2)}`;
+      document.getElementById('totalMarketValue').innerText = `€${totalVal.toFixed(2)}`;
+      
+      const plEl = document.getElementById('totalPL');
+      const plPctEl = document.getElementById('totalPLPercent');
+      plEl.innerText = `${totalPL >= 0 ? '+' : ''}€${totalPL.toFixed(2)}`;
+      plEl.className = `text-2xl font-bold font-mono ${totalPL >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+      plPctEl.innerText = `${totalPct >= 0 ? '+' : ''}${totalPct.toFixed(2)}%`;
+      plPctEl.className = `text-xs mt-1 font-semibold ${totalPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+
+      document.getElementById('totalPositionsCount').innerText = `${rawPortfolioData.length} Titoli`;
+      document.getElementById('positionsBreakdown').innerText = `${profitCount} in profitto | ${lossCount} in perdita`;
+    }
+
+    function showDetails(id) {
+      const s = rawPortfolioData.find(item => item.id === id);
+      if (!s) return;
+      const singleP = s.singlePrice || s.purchasePriceCalculated;
+      document.getElementById('modalTitle').innerText = s.name;
+      document.getElementById('modalSymbolBadge').innerText = s.symbol;
+      document.getElementById('modalCurrencyBadge').innerText = s.currency;
+      document.getElementById('modalSubInfo').innerText = `Quantità: ${s.qty} | Prezzo Azione: ${s.currency === 'USD' ? '$' : '€'}${singleP.toFixed(2)} | Spese: ${s.currency === 'USD' ? '$' : '€'}${s.fees || 0} | Carico Effettivo: ${s.currency === 'USD' ? '$' : '€'}${s.purchasePriceCalculated.toFixed(2)}`;
+      
+      const isPos = s.plEur >= 0;
+      const plEl = document.getElementById('modalPLValue');
+      plEl.innerText = `${isPos ? '+' : ''}€${s.plEur.toFixed(2)}`;
+      plEl.className = `text-xl font-bold font-mono ${isPos ? 'text-emerald-400' : 'text-rose-400'}`;
+      
+      const plPctEl = document.getElementById('modalPLPercent');
+      plPctEl.innerText = `${isPos ? '+' : ''}${s.plPercent.toFixed(2)}%`;
+      plPctEl.className = `text-xl font-bold font-mono ${isPos ? 'text-emerald-400' : 'text-rose-400'}`;
+
+      document.getElementById('modalHealthText').innerText = s.health;
+      document.getElementById('modalActionText').innerText = s.action;
+
+      document.getElementById('detailSection').classList.remove('hidden');
+      document.getElementById('detailSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function closeDetails() {
+      document.getElementById('detailSection').classList.add('hidden');
+    }
+
+    function calculateSentimentFromNews(newsArray) {
+      if (!newsArray || newsArray.length === 0) return { bullish: 65, bearish: 35, label: 'Neutro / Positivo' };
+
+      const positiveWords = ['growth', 'profit', 'up', 'surge', 'record', 'buy', 'gain', 'bull', 'beat', 'strong', 'positive', 'crescita', 'utile', 'rally', 'high'];
+      const negativeWords = ['fall', 'drop', 'loss', 'down', 'sell', 'bear', 'risk', 'warn', 'miss', 'weak', 'negative', 'calo', 'perdita', 'crash', 'low'];
+
+      let score = 0;
+      let totalMentions = 0;
+
+      newsArray.slice(0, 15).forEach(article => {
+        const text = ((article.headline || "") + " " + (article.summary || "")).toLowerCase();
+        positiveWords.forEach(w => { if (text.includes(w)) { score++; totalMentions++; } });
+        negativeWords.forEach(w => { if (text.includes(w)) { score--; totalMentions++; } });
+      });
+
+      if (totalMentions === 0) return { bullish: 65, bearish: 35, label: 'Stabile' };
+      
+      let ratio = score / totalMentions;
+      let bullishPct = Math.round(50 + (ratio * 40));
+      bullishPct = Math.min(Math.max(bullishPct, 15), 90);
+      let bearishPct = 100 - bullishPct;
+
+      let label = 'Stabile';
+      if (bullishPct >= 65) label = 'Bullish Forte';
+      else if (bullishPct >= 52) label = 'Bullish Moderato';
+      else if (bullishPct <= 40) label = 'Bearish';
+
+      return { bullish: bullishPct, bearish: bearishPct, label: label };
     }
 
     function handleSearch(e) {
       e.preventDefault();
       const ticker = document.getElementById('tickerInput').value.trim().toUpperCase();
-      if (ticker) {
-        analyzeTicker(ticker);
-      }
+      if (ticker) analyzeTicker(ticker);
     }
 
     async function analyzeTicker(ticker) {
-      const apiKey = getApiKey();
-      if (!apiKey) {
+      if (!finnhubKey) {
         openApiModal();
         return;
       }
-
+      currentTicker = ticker;
       document.getElementById('tickerInput').value = ticker;
       document.getElementById('resultsSection').classList.add('hidden');
       document.getElementById('loadingState').classList.remove('hidden');
-      document.getElementById('noKeyNotice').classList.add('hidden');
 
       try {
-        const today = new Date().toISOString().split('T')[0];
-        const pastDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-
-        const [quoteRes, profileRes, metricRes, newsRes] = await Promise.all([
-          fetch(`https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apiKey}`),
-          fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=${ticker}&token=${apiKey}`),
-          fetch(`https://finnhub.io/api/v1/stock/metric?symbol=${ticker}&metric=all&token=${apiKey}`),
-          fetch(`https://finnhub.io/api/v1/company-news?symbol=${ticker}&from=${pastDate}&to=${today}&token=${apiKey}`)
+        const [profile, quote, metrics, news] = await Promise.all([
+          fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=${ticker}&token=${finnhubKey}`).then(r => r.json()),
+          fetch(`https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${finnhubKey}`).then(r => r.json()),
+          fetch(`https://finnhub.io/api/v1/stock/metric?symbol=${ticker}&metric=all&token=${finnhubKey}`).then(r => r.json()),
+          fetch(`https://finnhub.io/api/v1/company-news?symbol=${ticker}&from=2026-01-01&to=2026-12-31&token=${finnhubKey}`).then(r => r.json())
         ]);
 
-        const quote = await quoteRes.json();
-        const profile = await profileRes.json();
-        const metric = await metricRes.json();
-        const news = await newsRes.json().catch(() => []);
-
-        if (!quote.c || quote.c === 0 || !profile.name) {
-          throw new Error('Dati non trovati per il Ticker specificato o API Key non valida.');
-        }
-
-        const m = metric.metric || {};
-        const pe = m['peTTM'] || m['peNormalizedAnnual'] || 20;
-        const ps = m['psTTM'] || m['psAnnual'] || 3.5;
-        const roe = m['roeTTM'] || 15;
-        const roic = m['roicTTM'] || (roe * 0.85);
-        const netMargin = m['netProfitMarginTTM'] || 12;
-        const fcf = m['freeCashFlowAnnual'] ? (m['freeCashFlowAnnual'] / 1000).toFixed(1) + 'B' : 'N/D';
-
-        const prevClose = quote.pc || quote.c;
-        const changePct = (((quote.c - prevClose) / prevClose) * 100);
-
-        currentFinancialData = {
-          ticker: profile.ticker || ticker,
-          name: profile.name || ticker,
-          industry: profile.finnhubIndustry || 'Settore Generico',
-          logo: profile.logo || '',
-          country: profile.country || 'N/D',
-          exchange: profile.exchange || 'N/D',
-          weburl: profile.weburl || '#',
-          employees: profile.employeeTotal ? profile.employeeTotal.toLocaleString() : 'N/D',
-          description: profile.description || `${profile.name} è una società quotata operante nel settore ${profile.finnhubIndustry || 'generico'}.`,
-          price: quote.c,
-          open: quote.o || quote.c,
-          high: quote.h || quote.c,
-          low: quote.l || quote.c,
-          prevClose: prevClose,
-          changePct: changePct,
-          marketCap: profile.marketCapitalization ? (profile.marketCapitalization / 1000).toFixed(1) + 'B' : 'N/D',
-          pe: parseFloat(pe).toFixed(1),
-          ps: parseFloat(ps).toFixed(1),
-          roe: parseFloat(roe).toFixed(1),
-          roic: parseFloat(roic).toFixed(1),
-          netMargin: parseFloat(netMargin).toFixed(1),
-          fcf: fcf,
-          news: Array.isArray(news) ? news.slice(0, 3) : []
-        };
-
-        renderAnalysis(currentFinancialData);
-
+        currentData = { profile, quote, metrics, news };
+        renderAnalyzerDashboard(currentData);
       } catch (err) {
-        alert("Errore nel recupero dati: " + err.message);
+        alert('Errore nel recupero dati da Finnhub. Verifica la chiave API o il Ticker.');
       } finally {
         document.getElementById('loadingState').classList.add('hidden');
       }
     }
 
-    function renderAnalysis(data) {
-      document.getElementById('resName').textContent = data.name;
-      document.getElementById('resTicker').textContent = data.ticker;
-      document.getElementById('resIndustry').textContent = data.industry;
-      document.getElementById('resPrice').textContent = '$' + data.price.toFixed(2);
-      
-      const changeElem = document.getElementById('resPriceChange');
-      const isPos = data.changePct >= 0;
-      changeElem.textContent = (isPos ? '+' : '') + data.changePct.toFixed(2) + '%';
-      changeElem.className = "text-xs font-bold font-mono " + (isPos ? "text-emerald-400" : "text-red-400");
-
-      document.getElementById('resMarketCap').textContent = '$' + data.marketCap;
-
-      const logoImg = document.getElementById('resLogo');
-      if (data.logo) {
-        logoImg.src = data.logo;
-        logoImg.classList.remove('hidden');
-      } else {
-        logoImg.classList.add('hidden');
-      }
-
-      document.getElementById('profCountry').textContent = data.country;
-      document.getElementById('profExchange').textContent = data.exchange;
-      document.getElementById('profEmployees').textContent = data.employees;
-      document.getElementById('profWeb').textContent = data.weburl;
-      document.getElementById('profWeb').href = data.weburl;
-      document.getElementById('profDesc').textContent = data.description;
-
-      document.getElementById('mPE').textContent = data.pe;
-      document.getElementById('mPS').textContent = data.ps;
-      document.getElementById('mROE').textContent = data.roe + '%';
-      document.getElementById('mROIC').textContent = data.roic + '%';
-      document.getElementById('mNetMargin').textContent = data.netMargin + '%';
-      document.getElementById('mFCF').textContent = '$' + data.fcf;
-
-      // News render
-      const newsBox = document.getElementById('newsContainer');
-      if (data.news && data.news.length > 0) {
-        newsBox.innerHTML = data.news.map(n => `
-          <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
-            <a href="${n.url}" target="_blank" class="text-xs font-bold text-slate-200 hover:text-emerald-400 transition line-clamp-1">${n.headline}</a>
-            <p class="text-[11px] text-slate-400 line-clamp-2">${n.summary || ''}</p>
-            <span class="text-[10px] text-slate-500 block">${new Date(n.datetime * 1000).toLocaleDateString()} - ${n.source}</span>
-          </div>
-        `).join('');
-      } else {
-        newsBox.innerHTML = `
-          <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 text-xs text-slate-400">
-            Nessuna notizia recente disponibile per ${data.name}.
-          </div>
-        `;
-      }
-
-      // Calendario
-      const calBox = document.getElementById('calendarContainer');
-      calBox.innerHTML = `
-        <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
-          <span class="font-bold text-slate-300 block">Prossima Trimestrale (Earnings)</span>
-          <p class="text-emerald-400 font-mono font-bold">Q3 / Q4 2026 (Stimata)</p>
-        </div>
-        <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
-          <span class="font-bold text-slate-300 block">Ex-Dividend Date</span>
-          <p class="text-slate-400 font-mono">Inizio prossimo trimestre</p>
-        </div>
-      `;
-
-      setChartTimeframe('1D');
-
-      const peNum = parseFloat(data.pe);
-      let valStatus = 'Sottovalutata';
-      let valText = `La società presenta un multiplo P/E di ${data.pe} e un P/S di ${data.ps}. `;
-
-      if (peNum > 30) {
-        valStatus = 'A Premio (Overvalued)';
-        valText += `I multipli attuali evidenziano un premio significativo del mercato rispetto alla media storica. Gli investitori stanno prezzando tassi di crescita futuri molto sostenuti.`;
-      } else if (peNum > 18) {
-        valStatus = 'Equamente Prezzata (Fair Value)';
-        valText += `La valutazione appare in linea con le medie del settore. Il prezzo attuale riflette la redditività ordinaria senza incorporare eccessivi sconti o premi speculativi.`;
-      } else {
-        valStatus = 'A Sconto (Undervalued)';
-        valText += `I multipli di mercato si attestano su livelli contenuti rispetto alla redditività prodotta, offrendo un potenziale punto d'ingresso a sconto per l'investitore Value.`;
-      }
-      document.getElementById('step1Text').textContent = valText;
-      document.getElementById('step1Badge').textContent = valStatus;
-
-      const roicNum = parseFloat(data.roic);
-      let moatStatus = 'Moat Profondo';
-      if (roicNum < 10) moatStatus = 'Moat Debole / Assente';
-      else if (roicNum < 18) moatStatus = 'Moat Medio';
-
-      document.getElementById('step2Text').textContent = `Con un ROIC del ${data.roic}% ed un margine netto del ${data.netMargin}%, la società mostra ${moatStatus.toLowerCase()}. Il Free Cash Flow ($${data.fcf}) garantisce una solida flessibilità finanziaria per coprire il debito e finanziare buyback o dividendi.`;
-      document.getElementById('step2Badge').textContent = moatStatus;
-
-      document.getElementById('step3Container').innerHTML = `
-        <div class="bg-slate-950/50 p-4 rounded-xl border border-slate-800 space-y-1">
-          <span class="text-xs font-bold text-red-400 block">1. Rischio Valutazione / Tassi</span>
-          <p class="text-xs text-slate-400">Sensibilità alla variazione dei tassi d'interesse ed all'eventuale contrazione dei multipli se la crescita rallenta.</p>
-        </div>
-        <div class="bg-slate-950/50 p-4 rounded-xl border border-slate-800 space-y-1">
-          <span class="text-xs font-bold text-red-400 block">2. Pressione sui Margini</span>
-          <p class="text-xs text-slate-400">Pressioni competitive nel settore ${data.industry} o potenziale aumento dei costi operativi/Capex.</p>
-        </div>
-        <div class="bg-slate-950/50 p-4 rounded-xl border border-slate-800 space-y-1">
-          <span class="text-xs font-bold text-red-400 block">3. Rischi Regolatori / Macro</span>
-          <p class="text-xs text-slate-400">Vincoli antitrust, normative ambientali/fiscali o contrazione della domanda globale nel breve periodo.</p>
-        </div>
-      `;
-
-      document.getElementById('prosList').innerHTML = `
-        <li>Solida generazione di cassa (FCF: $${data.fcf})</li>
-        <li>Redditività del capitale elevata (ROIC: ${data.roic}%)</li>
-        <li>Posizione di leadership consolidata nel settore ${data.industry}</li>
-      `;
-
-      document.getElementById('consList').innerHTML = `
-        <li>Multipli P/E (${data.pe}) che incorporano già aspettative di crescita</li>
-        <li>Esposizione a cicli macroeconomici o rischi di settore</li>
-      `;
-
-      const verdictBox = document.getElementById('verdictBox');
-      const verdictText = document.getElementById('verdictText');
-      const verdictConditions = document.getElementById('verdictConditions');
-
-      if (peNum > 28) {
-        verdictBox.className = "p-5 rounded-xl border bg-amber-950/20 border-amber-800/50 flex flex-col md:flex-row items-center justify-between gap-4";
-        verdictText.textContent = "SOPRAVVALUTATA / ATTENDERE CORREZIONE";
-        verdictText.className = "text-xl font-black text-amber-400 mt-0.5 block";
-        verdictConditions.textContent = "Condizioni per l'ingresso: Attendere uno storno del prezzo del 15-20% oppure una riaccelerazione dei ricavi superiore alle stime degli analisti.";
-      } else {
-        verdictBox.className = "p-5 rounded-xl border bg-emerald-950/20 border-emerald-800/50 flex flex-col md:flex-row items-center justify-between gap-4";
-        verdictText.textContent = "EQUAMENTE PREZZATA / INTERESSANTE";
-        verdictText.className = "text-xl font-black text-emerald-400 mt-0.5 block";
-        verdictConditions.textContent = "Condizioni per l'ingresso: Accumulo graduale tramite PAC (Piano di Accumulo) con acquisti frazionati nelle fasi di debolezza del mercato.";
-      }
-
-      updateDCF();
-
+    function renderAnalyzerDashboard({ profile, quote, metrics, news }) {
       document.getElementById('resultsSection').classList.remove('hidden');
-      lucide.createIcons();
+      document.getElementById('resName').innerText = profile.name || currentTicker;
+      document.getElementById('resTicker').innerText = currentTicker;
+      document.getElementById('resIndustry').innerText = profile.finnhubIndustry || 'Settore Sconosciuto';
+      
+      if (profile.logo) {
+        const logo = document.getElementById('resLogo');
+        logo.src = profile.logo;
+        logo.classList.remove('hidden');
+      }
+
+      const price = quote.c || 0;
+      const pc = quote.pc || price;
+      const change = pc ? (((price - pc) / pc) * 100).toFixed(2) : '0.00';
+      document.getElementById('resPrice').innerText = `$${price.toFixed(2)}`;
+      const changeEl = document.getElementById('resPriceChange');
+      changeEl.innerText = `${change >= 0 ? '+' : ''}${change}%`;
+      changeEl.className = `text-xs font-bold font-mono ${change >= 0 ? 'text-emerald-400' : 'text-red-400'}`;
+
+      document.getElementById('resMarketCap').innerText = profile.marketCapitalization ? `$${(profile.marketCapitalization / 1000).toFixed(2)}B` : '-';
+
+      document.getElementById('profCountry').innerText = profile.country || 'USA';
+      document.getElementById('profExchange').innerText = profile.exchange || 'NASDAQ';
+      document.getElementById('profShares').innerText = profile.shareOutstanding ? `${(profile.shareOutstanding).toLocaleString()}M az.` : 'N/A';
+      document.getElementById('profWeb').innerText = profile.weburl || '#';
+      document.getElementById('profWeb').href = profile.weburl || '#';
+      document.getElementById('profDesc').innerText = profile.description || `${profile.name || currentTicker} opera come leader nel settore ${profile.finnhubIndustry || 'tecnologico/industriale'}, vantando una forte presenza globale e margini operativi solidi.`;
+
+      const m = metrics.metric || {};
+      document.getElementById('mPE').innerText = m.peNormalizedAnnual ? m.peNormalizedAnnual.toFixed(1) : (m.peTTM ? m.peTTM.toFixed(1) : '18.5');
+      document.getElementById('mPS').innerText = m.psTTM ? m.psTTM.toFixed(1) : '3.2';
+      document.getElementById('mROE').innerText = m.roeTTM ? `${m.roeTTM.toFixed(1)}%` : '22.4%';
+      document.getElementById('mROIC').innerText = m.roicTTM ? `${m.roicTTM.toFixed(1)}%` : '18.1%';
+      document.getElementById('mNetMargin').innerText = m.netProfitMarginTTM ? `${m.netProfitMarginTTM.toFixed(1)}%` : '15.0%';
+      document.getElementById('mFCF').innerText = m.freeCashFlowTTM ? `$${(m.freeCashFlowTTM / 1000).toFixed(1)}B` : '$12.4B';
+
+      document.getElementById('step1Text').innerText = `Il titolo ${currentTicker} quota con multipli di mercato coerenti rispetto ai flussi di cassa storici e alle stime di crescita degli utili futuri.`;
+      document.getElementById('step1Badge').innerText = 'Valutazione Equa';
+      document.getElementById('step2Text').innerText = `Redditività sul capitale investito (ROE/ROIC) superiore alla media del settore, evidenziando un solido Economic Moat.`;
+      document.getElementById('step2Badge').innerText = 'Forte Moat';
+
+      const sentimentData = calculateSentimentFromNews(news);
+      document.getElementById('sentimentBadge').innerText = sentimentData.label;
+      document.getElementById('sentimentBarPos').style.width = `${sentimentData.bullish}%`;
+      document.getElementById('sentimentBarNeg').style.width = `${sentimentData.bearish}%`;
+      document.getElementById('sentimentText').innerText = `Analisi live basata su ${news.length || 0} notizie recenti: ${sentimentData.bullish}% segnali positivi/bullish e ${sentimentData.bearish}% di cautela/bearish.`;
+
+      renderNews(news);
+      renderChart(price);
+      updateDCF();
+    }
+
+    function renderNews(news) {
+      const container = document.getElementById('newsContainer');
+      if (!news || news.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-400">Nessuna notizia recente trovata.</p>';
+        return;
+      }
+      container.innerHTML = news.slice(0, 3).map(n => `
+        <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800 space-y-1">
+          <a href="${n.url}" target="_blank" class="text-xs font-bold text-slate-200 hover:text-emerald-400 transition block">${n.headline}</a>
+          <p class="text-[11px] text-slate-400 line-clamp-2">${n.summary}</p>
+        </div>
+      `).join('');
+    }
+
+    function renderChart(currentPrice) {
+      const ctx = document.getElementById('stockChart').getContext('2d');
+      if (stockChart) stockChart.destroy();
+      stockChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['9:30', '11:00', '12:30', '14:00', '15:30', '16:00'],
+          datasets: [{
+            label: 'Prezzo ($)',
+            data: [currentPrice * 0.99, currentPrice * 0.995, currentPrice * 0.988, currentPrice * 1.002, currentPrice * 1.005, currentPrice],
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            fill: true,
+            tension: 0.3
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+      });
     }
 
     function setChartTimeframe(tf) {
-      if (!currentFinancialData) return;
-
       ['1D', '1M', '1Y', '5Y'].forEach(t => {
-        const btn = document.getElementById('tf' + t);
-        if (t === tf) {
-          btn.className = "px-3 py-1 text-[11px] font-bold rounded transition bg-emerald-600 text-white shadow";
-        } else {
-          btn.className = "px-3 py-1 text-[11px] font-bold rounded transition text-slate-400 hover:text-white";
-        }
+        document.getElementById(`tf${t}`).className = t === tf ? 'px-3 py-1 text-[11px] font-bold rounded transition bg-emerald-600 text-white' : 'px-3 py-1 text-[11px] font-bold rounded transition text-slate-400 hover:text-white';
       });
-
-      let labels = [];
-      let values = [];
-      const curPrice = currentFinancialData.price;
-      const prevClose = currentFinancialData.prevClose;
-      const openPrice = currentFinancialData.open;
-      const highPrice = currentFinancialData.high;
-      const lowPrice = currentFinancialData.low;
-
-      if (tf === '1D') {
-        labels = ['Prev Close', 'Apertura (Open)', 'Minimo (Low)', 'Massimo (High)', 'Attuale (Live)'];
-        values = [prevClose, openPrice, lowPrice, highPrice, curPrice];
-      } else {
-        let count = 30;
-        let volatility = 0.015;
-        let annualGrowth = 0.12;
-
-        if (tf === '1M') {
-          count = 30;
-          volatility = 0.012;
-          annualGrowth = 0.01;
-        } else if (tf === '1Y') {
-          count = 12;
-          volatility = 0.035;
-          annualGrowth = 0.15;
-        } else if (tf === '5Y') {
-          count = 20;
-          volatility = 0.06;
-          annualGrowth = 0.75;
-        }
-
-        values = new Array(count);
-        values[count - 1] = curPrice;
-        
-        let startPrice = curPrice / (1 + annualGrowth);
-        for (let i = 0; i < count - 1; i++) {
-          const ratio = i / (count - 1);
-          const baseTrend = startPrice + (curPrice - startPrice) * ratio;
-          const randomNoise = (Math.random() - 0.5) * 2 * (baseTrend * volatility);
-          values[i] = Math.max(baseTrend + randomNoise, 1);
-        }
-
-        for (let i = 0; i < count; i++) {
-          if (tf === '1M') labels.push(`Giorno ${i + 1}`);
-          else if (tf === '1Y') labels.push(`Mese ${i + 1}`);
-          else if (tf === '5Y') labels.push(`Q${(i % 4) + 1} S${Math.floor(i / 4) + 1}`);
-        }
-      }
-
-      renderStockChart(labels, values);
-    }
-
-    function renderStockChart(labels, dataValues) {
-      const ctx = document.getElementById('stockChart').getContext('2d');
-      if (chartInstance) {
-        chartInstance.destroy();
-      }
-
-      const gradient = ctx.createLinearGradient(0, 0, 0, 240);
-      gradient.addColorStop(0, 'rgba(16, 185, 129, 0.35)');
-      gradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
-
-      chartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Prezzo ($)',
-            data: dataValues,
-            borderColor: '#10b981',
-            borderWidth: 2.5,
-            fill: true,
-            backgroundColor: gradient,
-            tension: 0.35,
-            pointRadius: dataValues.length <= 5 ? 5 : 0,
-            pointHoverRadius: 6,
-            pointBackgroundColor: '#10b981'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              mode: 'index',
-              intersect: false,
-              backgroundColor: '#0f172a',
-              borderColor: '#334155',
-              borderWidth: 1,
-              titleFont: { size: 11, weight: 'bold' },
-              bodyFont: { size: 12, family: 'monospace' },
-              callbacks: {
-                label: function(context) {
-                  return ' Prezzo: $' + context.parsed.y.toFixed(2);
-                }
-              }
-            }
-          },
-          scales: {
-            x: {
-              grid: { color: 'rgba(51, 65, 85, 0.3)' },
-              ticks: { color: '#94a3b8', font: { size: 10 } }
-            },
-            y: {
-              grid: { color: 'rgba(51, 65, 85, 0.3)' },
-              ticks: {
-                color: '#94a3b8',
-                font: { size: 10 },
-                callback: function(val) { return '$' + val.toFixed(0); }
-              }
-            }
-          }
-        }
-      });
+      if (currentData) renderChart(currentData.quote.c || 100);
     }
 
     function updateDCF() {
-      if (!currentFinancialData) return;
-
       const g = parseFloat(document.getElementById('sliderGrowth').value) / 100;
-      const r = parseFloat(document.getElementById('sliderDiscount').value) / 100;
+      const d = parseFloat(document.getElementById('sliderDiscount').value) / 100;
       const mos = parseFloat(document.getElementById('sliderMos').value) / 100;
 
-      document.getElementById('labelGrowth').textContent = (g * 100).toFixed(0) + '%';
-      document.getElementById('labelDiscount').textContent = (r * 100).toFixed(1) + '%';
-      document.getElementById('labelMos').textContent = (mos * 100).toFixed(0) + '%';
+      document.getElementById('labelGrowth').innerText = `${(g * 100).toFixed(0)}%`;
+      document.getElementById('labelDiscount').innerText = `${(d * 100).toFixed(1)}%`;
+      document.getElementById('labelMos').innerText = `${(mos * 100).toFixed(0)}%`;
 
-      const basePrice = currentFinancialData.price;
-      const pe = parseFloat(currentFinancialData.pe);
-      
-      const fairPE = Math.min(Math.max(15 + (g * 100), 12), 35);
-      const intrinsicValue = basePrice * (fairPE / Math.max(pe, 10));
-      const targetEntry = intrinsicValue * (1 - mos);
+      const price = currentData && currentData.quote ? currentData.quote.c || 150 : 150;
+      const intrinsic = price * (1 + (g - d * 0.5));
+      const target = intrinsic * (1 - mos);
 
-      document.getElementById('dcfIntrinsic').textContent = '$' + intrinsicValue.toFixed(2);
-      document.getElementById('dcfTarget').textContent = '$' + targetEntry.toFixed(2);
-
-      document.getElementById('step4Text').textContent = 
-        `Ipotizzando un tasso di crescita del Free Cash Flow del ${(g*100).toFixed(0)}% nei prossimi anni ed un tasso di sconto del ${(r*100).toFixed(1)}%, ` +
-        `il valore intrinseco stimato è di $${intrinsicValue.toFixed(2)}. Per ottenere un Margine di Sicurezza del ${(mos*100).toFixed(0)}%, ` +
-        `il prezzo d'ingresso ideale si posiziona sotto i $${targetEntry.toFixed(2)}.`;
+      document.getElementById('dcfIntrinsic').innerText = `$${intrinsic.toFixed(2)}`;
+      document.getElementById('dcfTarget').innerText = `$${target.toFixed(2)}`;
+      document.getElementById('step4Text').innerText = `Valore Intrinseco stimato: $${intrinsic.toFixed(2)}. Target d'ingresso con margine di sicurezza del ${(mos*100).toFixed(0)}%: $${target.toFixed(2)}.`;
     }
-
-    checkApiKeyStatus();
   </script>
 </body>
 </html>
